@@ -1,0 +1,91 @@
+import "object.pil"
+
+import diesler
+import diesler::exception
+
+class diesler::DSLList extends DSLObject {
+  List<DSLObject> value = null;
+
+  new(Scope scope, List<DSLObject> value) extends super(scope["List"].as<DSLClass>) {
+    this.value = value;
+  }
+
+  as<String> {
+    return value.as<String>;
+  }
+}
+
+DSLClass diesler::builtin::list::init(Scope scope) {
+  var list = new DSLClass(scope, scope["Object"].as<DSLClass>, "Int");
+  list.instanceMethods["add:"] = new diesler::builtin::list::AddMethod(scope);
+  list.instanceMethods["remove:"] = new diesler::builtin::list::RemoveMethod(scope);
+  list.instanceMethods["contains:"] = new diesler::builtin::list::ContainsMethod(scope);
+  list.instanceMethods["get:"] = new diesler::builtin::list::GetMethod(scope);
+  list.instanceMethods["length"] = new diesler::builtin::list::LengthMethod(scope);
+
+  list.instanceMethods["=="] = new diesler::builtin::list::EqualsMethod(scope);
+  return list;
+}
+
+class diesler::builtin::list::AddMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "add:", new Array<String>("item"), null) {
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    var l = o.as<DSLList>;
+    l.value.add(args[0]);
+    return o;
+  }
+}
+
+class diesler::builtin::list::RemoveMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "remove:", new Array<String>("item"), null) {
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    var l = o.as<DSLList>;
+    l.value.remove(args[0]);
+    return o;
+  }
+}
+
+class diesler::builtin::list::ContainsMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "contains:", new Array<String>("item"), null) {
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    var l = o.as<DSLList>;
+    return new DSLBool(scope, l.value.contains(args[0]));
+  }
+}
+
+class diesler::builtin::list::GetMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "get:", new Array<String>("index"), null) {
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    var l = o.as<DSLList>;
+    return l.value[args[0].as<DSLInt>.value];
+  }
+}
+
+class diesler::builtin::list::LengthMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "length", new Array<String>(), null) {
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    var l = o.as<DSLList>;
+    return new DSLInt(scope, l.value.length);
+  }
+}
+
+class diesler::builtin::list::EqualsMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "==", new Array<String>("other"), null) {
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    var l = o.as<DSLList>;
+    var l2 = args[0].as<DSLList>;
+    return new DSLBool(scope, l.value == l2.value);
+  }
+}

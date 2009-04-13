@@ -3,6 +3,7 @@ import "object.pil"
 import "builtin/object.pil"
 import "builtin/string.pil"
 import "builtin/int.pil"
+import "builtin/list.pil"
 import "builtin/bool.pil"
 import "builtin/native.pil"
 
@@ -20,6 +21,7 @@ void diesler::initInterpreter(Scope scope) {
   scope["String"] = diesler::builtin::string::init(scope);
   scope["Int"] = diesler::builtin::int::init(scope);
   scope["Bool"] = diesler::builtin::bool::init(scope);
+  scope["List"] = diesler::builtin::list::init(scope);
 }
 
 class diesler::Scope {
@@ -80,6 +82,12 @@ class diesler::Scope {
       return new DSLInt(this, exp.as<IntTerm>.value);
     } else if(exp instanceof BoolTerm) {
       return new DSLBool(this, exp.as<BoolTerm>.value);
+    } else if(exp instanceof ListTerm) {
+      var l = new List<DSLObject>();
+      for(Term t : exp.as<ListTerm>.values) {
+        l.add(evalExp(t));
+      }
+      return new DSLList(this, l);
     } else if(exp instanceof BlockTerm) {
       var m = new DSLMethod(this, "noname", new Array<String>(), exp.as<BlockTerm>);
       m.closure = this;

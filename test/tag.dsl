@@ -11,4 +11,5 @@ defineMethods: {
 }
 
 print: (takX: 24 y: 16 z: 8)
+print: "Number of calls:"
 print: (get: "counter")
