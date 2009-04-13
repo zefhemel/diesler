@@ -81,6 +81,8 @@ class diesler::Scope {
       return new DSLInt(this, exp.as<IntTerm>.value);
     } else if(exp instanceof BoolTerm) {
       return new DSLBool(this, exp.as<BoolTerm>.value);
+    } else if(exp instanceof FieldNameTerm) {
+      return self.getField(exp.as<FieldNameTerm>.fieldName);
     } else if(exp instanceof ListTerm) {
       var l = new List<DSLObject>();
       for(Term t : exp.as<ListTerm>.values) {

@@ -35,7 +35,11 @@ class diesler::builtin::object::NewInstanceMethod extends DSLMethod {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
-    return new DSLObject(o.as<DSLClass>);
+    var obj = new DSLObject(o.as<DSLClass>);
+    if(obj.getMethod("init") != null) {
+      obj.getMethod("init").invoke(scope, obj, new Array<DSLMethod>());
+    }
+    return obj;
   }
 }
 

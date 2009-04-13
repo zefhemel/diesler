@@ -6,25 +6,15 @@ print: n
 
 User = Object subClass: "User" withMethods: {
   init {
-    set: "name" to: "unkown"
-    set: "age" to: 0
+    @name = "unknown"
+    @age = 0
   }
 
-  name: name {
-    set: "name" to: name
-  }
+  name: name { @name = name }
+  name { @name }
 
-  name {
-    get: "name"
-  }
-
-  age: age {
-    set: "age" to: age
-  }
-
-  age {
-    get: "age"
-  }
+  age: age { @age = age }
+  age { @age }
 }
 
 zef = User new
@@ -46,6 +36,10 @@ defineMethods: {
         print: "It's an integer!"
       }
 
+      User[ name => "Zef Hemel" ]: {
+        print: "Hey Zef!"
+      }
+
       User[ name => name, age => age ]: {
         print: "It's a user called " + name + " who's "
         print: age
@@ -57,4 +51,6 @@ defineMethods: {
 saySomethingAbout: 10
 saySomethingAbout: "Zef Hemel"
 saySomethingAbout: c
+saySomethingAbout: zef
+zef name: "Pietje"
 saySomethingAbout: zef

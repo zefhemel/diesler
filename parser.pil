@@ -42,6 +42,10 @@ class diesler::Parser {
     if(idn != null) {
       return new IdnTerm(scope, idn);
     }
+    var fn = acceptFieldName();
+    if(fn != null) {
+      return new FieldNameTerm(scope, fn);
+    }
     if(accept('(')) {
       acceptWhiteSpace();
       var exp = acceptStatement();
@@ -298,6 +302,15 @@ class diesler::Parser {
     }
   }
 
+
+  String acceptFieldName() {
+    if(accept('@')) {
+      return acceptIdn();
+    } else {
+      return null;
+    }
+  }
+
   Term acceptList() {
     acceptWhiteSpace();
     Term t = acceptMS();
@@ -352,11 +365,9 @@ class diesler::Parser {
     if(idn != null) {
       acceptWhiteSpace();
       if(accept('[')) { // object pattern
-        println("Here!");
         acceptWhiteSpace();
         var l = new List<PropertyMatchTerm>();
         while(!accept(']')) {
-          println("Hhere 2");
           var property = acceptIdn();
           if(property == null) {
             i = oldI;
@@ -391,6 +402,10 @@ class diesler::Parser {
     Term literal = acceptLiteral();
     if(literal != null) {
       return new LiteralMatchTerm(scope, literal);
+    }
+    String fieldName = acceptFieldName();
+    if(fieldName != null) {
+      return new FieldNameMatchTerm(scope, fieldName);
     }
     if(accept('(')) {
       acceptWhiteSpace();

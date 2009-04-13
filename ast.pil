@@ -247,6 +247,18 @@ class diesler::IdnTerm extends diesler::Term {
   }
 }
 
+class diesler::FieldNameTerm extends diesler::Term {
+  String fieldName = null;
+
+  new(Scope scope, String fieldName) extends super(scope["ASTFieldName"]) {
+    this.fieldName = fieldName;
+  }
+
+  as<String> {
+    return fieldName;
+  }
+}
+
 class diesler::MatchTerm extends diesler::Term {
   Term condition = null;
 
@@ -284,6 +296,27 @@ class diesler::IdnMatchTerm extends diesler::MatchTerm {
 
   as<String> {
     return idn;
+  }
+}
+
+class diesler::FieldNameMatchTerm extends diesler::MatchTerm {
+  String fieldName = null;
+
+  new(Scope scope, String fieldName) extends super(scope["ASTIdentifierMatch"]) {
+    this.fieldName = fieldName;
+  }
+
+  Bool match(Scope scope, DSLObject other) {
+    if(checkMatch(scope, condition, other)) {
+      scope.self.setField(fieldName, other);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  as<String> {
+    return fieldName;
   }
 }
 
