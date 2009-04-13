@@ -11,6 +11,7 @@ DSLClass diesler::builtin::object::init(Scope scope) {
   object.methods["defineMethods:"] = new diesler::builtin::object::DefineMethods(scope, false);
   object.methods["subClass:withMethods:"] = new diesler::builtin::object::SubclassMethod(scope);
   object.methods["importNativeClass:"] = new diesler::builtin::native::NewNativeClassMethod(scope);
+  object.instanceMethods["isA:"] = new diesler::builtin::object::IsAMethod(scope);
 
   object.instanceMethods["=="] = new diesler::builtin::object::EqMethod(scope);
   object.instanceMethods["!="] = new diesler::builtin::object::NotEqMethod(scope);
@@ -112,6 +113,23 @@ class diesler::builtin::object::SubclassMethod extends DSLMethod {
     }
     //scope[className] = cls;
     return cls;
+  }
+}
+
+class diesler::builtin::object::IsAMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "isA:", new Array<String>("class"), null) {
+  }
+
+  DSLObject invoke(Scope scope, DSLObject self, Array<DSLObject> args) {
+    var cls = self.cls;
+    var checkCls = args[0].as<DSLClass>;
+    while(cls != null) {
+      if(cls == checkCls) {
+        return new DSLBool(scope, true);
+      }
+      cls = cls.superClass;
+    }
+    return new DSLBool(scope, false);
   }
 }
 
