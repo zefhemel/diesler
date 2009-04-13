@@ -95,7 +95,7 @@ class diesler::Scope {
       }
       return new DSLList(this, l);
     } else if(exp instanceof BlockTerm) {
-      var m = new DSLMethod(this, "noname", new Array<String>(), exp.as<BlockTerm>);
+      var m = new DSLMethod(this, "noname", new Array<MatchTerm>(), exp.as<BlockTerm>);
       m.closure = this;
       return m;
     } else if(exp instanceof MessageSendTerm) {

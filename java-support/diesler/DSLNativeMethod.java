@@ -3,10 +3,12 @@ package diesler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import diesler.*;
+
 public class DSLNativeMethod extends DSLMethod {
 
 	public DSLNativeMethod(diesler.Scope scope, String selector) {
-		super(scope, selector, new String[] { "args" }, null);
+		super(scope, selector, new  MatchTerm[] { new IdnMatchTerm(scope, "args") }, null);
 	}
 
 	@Override

@@ -22,6 +22,10 @@ zef name: "Zef Hemel"
 zef age: 25
 
 defineMethods: {
+  showSecond: (first(isA: Int), second(isA: Int)) {
+    print: second
+  }
+
   saySomethingAbout: sth {
     match: sth against: {
       str(isA: String): { 
@@ -54,3 +58,5 @@ saySomethingAbout: c
 saySomethingAbout: zef
 zef name: "Pietje"
 saySomethingAbout: zef
+
+showSecond: (1, 2)

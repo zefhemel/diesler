@@ -50,8 +50,11 @@ class diesler::Parser {
       acceptWhiteSpace();
       var exp = acceptStatement();
       acceptWhiteSpace();
-      expect(')');
-      return exp;
+      if(!accept(')')) {
+        i = oldI;
+      } else {
+        return exp;
+      }
     }
     var gr = acceptBlock();
     if(gr != null) {
@@ -126,7 +129,7 @@ class diesler::Parser {
         String postfixMethodname = acceptIdnNoKeyword();
         MethodSignature sig = null;
         if(postfixMethodname != null) {
-          sig = new MethodSignature(scope, postfixMethodname, new Array<String>());
+          sig = new MethodSignature(scope, postfixMethodname, new Array<MatchTerm>());
         } else {
           sig = acceptKeywordMethodSignature();
           if(sig == null) {
@@ -180,19 +183,19 @@ class diesler::Parser {
 
   MethodSignature acceptKeywordMethodSignature() {
     var selector = new MutableString();
-    var args = new List<String>();
+    var args = new List<MatchTerm>();
     acceptWhiteSpace();
     var kw = acceptKeyword();
     while(kw != null) {
       selector.append(kw);
       acceptWhiteSpace();
-      var arg = acceptIdnNoKeyword();
+      MatchTerm arg = acceptPatternWithCondition();
       args.add(arg);
       acceptWhiteSpace();
       kw = acceptKeyword();
     }
     if(args.length > 0) {
-      return new MethodSignature(scope, selector.as<String>, args.as<Array<String>>);
+      return new MethodSignature(scope, selector.as<String>, args.as<Array<MatchTerm>>);
     } else {
       return null;
     }
@@ -376,7 +379,7 @@ class diesler::Parser {
           acceptWhiteSpace();
           if(accept('=') && accept('>')) {
             acceptWhiteSpace();
-            var pattern = acceptPattern();
+            var pattern = acceptPatternWithCondition();
             if(pattern != null) {
               l.add(new PropertyMatchTerm(scope, property, pattern));
               acceptWhiteSpace();

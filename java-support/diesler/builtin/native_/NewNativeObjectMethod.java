@@ -1,14 +1,10 @@
 package diesler.builtin.native_;
 
-import diesler.DSLMethod;
-import diesler.DSLNativeClass;
-import diesler.DSLNativeObject;
-import diesler.DSLObject;
-import diesler.NativeUtils;
+import diesler.*;
 
 public class NewNativeObjectMethod extends DSLMethod {
 	public NewNativeObjectMethod(diesler.Scope scope, String selector) {
-		super(scope, selector, new String[] { "whatever" }, null);
+		super(scope, selector, new MatchTerm[] { new IdnMatchTerm(scope, "whatever") }, null);
 	}
 
 	@Override

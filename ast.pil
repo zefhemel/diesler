@@ -127,9 +127,9 @@ class diesler::MethodDefTerm extends diesler::Term {
 
 class diesler::MethodSignature extends diesler::Term {
   String selector = null;
-  Array<String> arguments = null;
+  Array<MatchTerm> arguments = null;
 
-  new(Scope scope, String selector, Array<String> arguments) extends super(scope["ASTMethodSignature"]) {
+  new(Scope scope, String selector, Array<MatchTerm> arguments) extends super(scope["ASTMethodSignature"]) {
     this.selector = selector;
     this.arguments = arguments;
   }

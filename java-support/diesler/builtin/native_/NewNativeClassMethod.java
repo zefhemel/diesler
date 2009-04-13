@@ -2,12 +2,11 @@ package diesler.builtin.native_;
 
 import java.lang.reflect.Constructor;
 
-import diesler.DSLMethod;
-import diesler.DSLNativeClass;
+import diesler.*;
 
 public class NewNativeClassMethod extends DSLMethod {
 	public NewNativeClassMethod(diesler.Scope scope) {
-		super(scope, "new:", new String[] { "fullyQualifiedClassName" }, null);
+		super(scope, "new:", new MatchTerm[] { new IdnMatchTerm(scope, "fullyQualifiedClassName") }, null);
 	}
 
 	@SuppressWarnings("unchecked")

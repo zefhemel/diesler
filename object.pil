@@ -107,13 +107,13 @@ class diesler::DSLClass extends DSLObject {
 }
 
 class diesler::DSLMethod extends DSLObject {
-  Array<String> argumentNames = null;
+  Array<MatchTerm> argumentPatterns = null;
   BlockTerm block = null;
   String selector = null;
   Scope closure = null;
 
-  new(Scope scope, String selector, Array<String> argumentNames, BlockTerm block) extends super(scope["Method"].as<DSLClass>){
-    this.argumentNames = argumentNames;
+  new(Scope scope, String selector, Array<MatchTerm> argumentPatterns, BlockTerm block) extends super(scope["Method"].as<DSLClass>){
+    this.argumentPatterns = argumentPatterns;
     this.block = block;
     this.selector = selector;
     this.closure = closure;
@@ -132,8 +132,11 @@ class diesler::DSLMethod extends DSLObject {
     } else {
       localScope = new Scope(scope, self);
     }
-    for(Int i = 0; i < argumentNames.length; i++) {
-      localScope.variables[argumentNames[i]] = args[i];
+    for(Int i = 0; i < argumentPatterns.length; i++) {
+      if(!argumentPatterns[i].match(localScope, args[i])) {
+        throw new DieslerException("Argument for message " + selector + " did not match pattern.");
+      }
+      //localScope.variables[argumentNames[i]] = args[i];
     }
     DSLObject rv = localScope.evalBlock(block);
     if(localScope.returnValue != null) {
