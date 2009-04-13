@@ -1,0 +1,1 @@
+/Domain/tudelft.net/Users/zhemel/.vim/syntax/diesler.vim
