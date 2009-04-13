@@ -315,6 +315,48 @@ class diesler::ListMatchTerm extends diesler::MatchTerm {
   }
 }
 
+class diesler::ObjectMatchTerm extends diesler::MatchTerm {
+  String classString = null;
+  Array<PropertyMatchTerm> properties = null;
+
+  new(Scope scope, String classString, Array<PropertyMatchTerm> properties) extends super(scope["ASTObjectMatchTerm"]) {
+    this.classString = classString;
+    this.properties = properties;
+  }
+
+  Bool match(Scope scope, DSLObject other) {
+    DSLObject tmp = scope[classString];
+    DSLClass klass = tmp.as<DSLClass>;
+    if(!other.isInstanceOf(klass)) {
+      return false;
+    }
+    for(PropertyMatchTerm pmt : properties) {
+      if(other.getMethod(pmt.property) == null) {
+        return false;
+      }
+      var result = other.getMethod(pmt.property).invoke(scope, other, new Array<DSLObject>());
+      if(!pmt.pattern.match(scope, result)) {
+        return false;
+      }
+    }
+    return checkMatch(scope, condition, other);
+  }
+
+  as<String> {
+    return properties.as<String>;
+  }
+}
+
+class diesler::PropertyMatchTerm extends diesler::MatchTerm {
+  String property = null;
+  MatchTerm pattern = null;
+
+  new(Scope scope, String property, MatchTerm pattern) extends super(scope["ASTPropertyMatch"]) {
+    this.property = property;
+    this.pattern = pattern;
+  }
+}
+
 class diesler::LiteralMatchTerm extends diesler::MatchTerm {
   Term value = null;
 

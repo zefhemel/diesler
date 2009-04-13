@@ -41,6 +41,17 @@ class diesler::DSLObject {
       return curCls.instanceMethods[selector];
     }
   }
+
+  Bool isInstanceOf(DSLClass checkCls) {
+    var cls = this.cls;
+    while(cls != null) {
+      if(cls == checkCls) {
+        return true;
+      }
+      cls = cls.superClass;
+    }
+    return false;
+  }
   
   DSLObject getField(String name) {
     if(!fields.contains(name)) {

@@ -122,15 +122,7 @@ class diesler::builtin::object::IsAMethod extends DSLMethod {
   }
 
   DSLObject invoke(Scope scope, DSLObject self, Array<DSLObject> args) {
-    var cls = self.cls;
-    var checkCls = args[0].as<DSLClass>;
-    while(cls != null) {
-      if(cls == checkCls) {
-        return new DSLBool(scope, true);
-      }
-      cls = cls.superClass;
-    }
-    return new DSLBool(scope, false);
+    return new DSLBool(scope, self.isInstanceOf(args[0].as<DSLClass>));
   }
 }
 

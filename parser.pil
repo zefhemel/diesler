@@ -350,7 +350,43 @@ class diesler::Parser {
     var oldI = i;
     String idn = acceptIdn();
     if(idn != null) {
-      return new IdnMatchTerm(scope, idn);
+      acceptWhiteSpace();
+      if(accept('[')) { // object pattern
+        println("Here!");
+        acceptWhiteSpace();
+        var l = new List<PropertyMatchTerm>();
+        while(!accept(']')) {
+          println("Hhere 2");
+          var property = acceptIdn();
+          if(property == null) {
+            i = oldI;
+            return null;
+          }
+          acceptWhiteSpace();
+          if(accept('=') && accept('>')) {
+            acceptWhiteSpace();
+            var pattern = acceptPattern();
+            if(pattern != null) {
+              l.add(new PropertyMatchTerm(scope, property, pattern));
+              acceptWhiteSpace();
+            } else {
+              i = oldI;
+              return null;
+            }
+          } else {
+            i = oldI;
+            return null;
+          }
+          if(!accept(',') && !lookAhead("]")) {
+            i = oldI;
+            return null;
+          }
+          acceptWhiteSpace();
+        }
+        return new ObjectMatchTerm(scope, idn, l.as<Array<PropertyMatchTerm>>);
+      } else { // Identifier pattern
+        return new IdnMatchTerm(scope, idn);
+      }
     }
     Term literal = acceptLiteral();
     if(literal != null) {
