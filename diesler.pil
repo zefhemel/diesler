@@ -1,0 +1,28 @@
+import "ast.pil"
+import "parser.pil"
+import "io.pil"
+import "interpreter.pil"
+//import "pretty.pil"
+
+import diesler
+
+void main(Array<String> args) {
+  String input = null;
+  initInterpreter();
+  if(args.length > 0) {
+    var file = new pil::io::ReadFile(args[0]);
+    var content = file.readAll();
+    file.close();
+    var parsed = new Parser(content).acceptStatements();
+    new Env(new DSLObject(diesler::rootNamespace["Object"])).evalBlock(parsed);
+  } else {
+    println("Welcome to diesler, type :q to quit.");
+    while(input != ":q") {
+      print("> ");
+      input = readln();
+      if(input != ":q") {
+        println(new Parser(input).acceptStatements().toIndentedString(0));
+      }
+    }
+  }
+}

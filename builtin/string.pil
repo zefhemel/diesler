@@ -1,0 +1,43 @@
+import "object.pil"
+
+import diesler
+import diesler::exception
+
+class diesler::DSLString extends DSLObject {
+  String value = null;
+
+  new(String value) extends super(rootNamespace["String"]) {
+    this.value = value;
+  }
+
+  as<String> {
+    return value;
+  }
+
+  Bool ==(Object other) {
+    if(other == null) {
+      return false;
+    }
+    if(other instanceof DSLString) {
+      return value == other.as<DSLString>.value;
+    } else {
+      return false;
+    }
+  }
+}
+
+DSLClass diesler::builtin::string::init() {
+  var string = new DSLClass(rootNamespace["Object"], "String");
+  string.instanceMethods["+"] = new diesler::builtin::string::StringConcatMethod();
+  return string;
+}
+
+class diesler::builtin::string::StringConcatMethod extends DSLMethod {
+  new() extends super("+", new Array<String>("str"), null) {
+  }
+
+  DSLObject invoke(DSLObject o, Array<DSLObject> args) {
+    return new DSLString(o.as<DSLString>.value + args[0].as<DSLString>.value);
+  }
+}
+

@@ -1,0 +1,32 @@
+
+class pil::io::IOException extends Exception {
+  String message = null;
+  new(String message) {
+    this.message = message;
+  }
+}
+
+external class pil::io::ReadFile {
+  new(String filename);
+  String readAll();
+  String readLine();
+  void close();
+}
+
+external class pil::io::WriteFile {
+  new(String filename);
+  void write(String str);
+  void writeLine(String line);
+  void close();
+}
+
+/*
+void main(Array<String> args) {
+  var f = new pil::io::ReadFile("io.pil");
+  var all = f.readAll();
+  f.close();
+  var f2 = new pil::io::WriteFile("io.pil.bak");
+  f2.write(all);
+  f2.close();
+}
+*/

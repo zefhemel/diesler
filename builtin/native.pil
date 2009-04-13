@@ -1,0 +1,4 @@
+
+external class diesler::builtin::native::NewNativeClassMethod extends diesler::DSLMethod {
+  new();
+}

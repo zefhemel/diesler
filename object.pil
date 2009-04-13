@@ -1,0 +1,128 @@
+import "interpreter.pil"
+
+import diesler
+import diesler::exception
+
+class diesler::exception::NoSuchFieldException extends Exception { 
+  new(String field) extends super(field) {
+  }
+}
+
+class diesler::exception::NoSuchMethodException extends Exception {
+  new(String method) extends super(method) {
+  }
+}
+
+class diesler::exception::InvalidArgumentException extends Exception {
+  new(String message) extends super(message) {
+  }
+}
+
+class diesler::DSLObject {
+  DSLClass cls = null;
+  Map<String, DSLMethod> methods = new Map<String, DSLMethod>();
+  Map<String, DSLObject> fields = new Map<String, DSLObject>();
+
+  new(DSLClass cls) {
+    this.cls = cls;
+  }
+
+  DSLMethod getMethod(String selector) {
+    if(methods.contains(selector)) {
+      return methods[selector];
+    }
+    var curCls = this.cls;
+    while(curCls != null && !curCls.instanceMethods.contains(selector)) {
+      curCls = curCls.superClass;
+    }
+    if(curCls == null) {
+      throw new NoSuchMethodException(selector);
+    } else {
+      return curCls.instanceMethods[selector];
+    }
+  }
+  
+  DSLObject getField(String name) {
+    if(!fields.contains(name)) {
+      throw new NoSuchFieldException(name);
+    } else {
+      return fields[name];
+    }
+  }
+
+  void setField(String name, DSLObject value) {
+    fields[name] = value;
+  }
+
+  as<String> {
+    var s = new MutableString();
+    s.append("I'm an object of type " + cls.name + " I contain the following fields: ");
+    for(String field : fields.keys) {
+      s.append(field);
+      s.append(' ');
+    }
+    return s.as<String>;
+  }
+}
+
+class diesler::DSLClass extends DSLObject {
+  DSLClass superClass = null;
+  String name = null;
+  Map<String, DSLMethod> instanceMethods = new Map<String, DSLMethod>();
+
+  new(DSLClass superClass, String name) extends super(rootNamespace["Object"]) {
+    this.superClass = superClass;
+    this.name = name;
+  }
+
+  DSLMethod getMethod(String selector) {
+    var curCls = this;
+    while(curCls != null && !curCls.methods.contains(selector)) {
+      curCls = curCls.superClass;
+    }
+    if(curCls == null) {
+      throw new NoSuchMethodException(selector);
+    } else {
+      return curCls.methods[selector];
+    }
+  }
+}
+
+class diesler::DSLMethod extends DSLObject {
+  Array<String> argumentNames = null;
+  BlockTerm block = null;
+  String selector = null;
+  Env closure = null;
+
+  new(String selector, Array<String> argumentNames, BlockTerm block) extends super(rootNamespace["Method"]){
+    this.argumentNames = argumentNames;
+    this.block = block;
+    this.selector = selector;
+    this.closure = closure;
+  }
+
+  void verifyType(DSLObject o, pil::reflect::Class type) {
+    if(o.class != type) {
+      throw new InvalidArgumentException("Argument: " + o.as<String> + " is not of type: " + type.qualifiedId);
+    }
+  }
+
+  DSLObject invoke(DSLObject self, Array<DSLObject> args) {
+    Env env = null;
+    if(closure != null) {
+      env = closure.lightClone(self);
+    } else {
+      env = new Env(self);
+    }
+    for(Int i = 0; i < argumentNames.length; i++) {
+      env.variables[argumentNames[i]] = args[i];
+    }
+    DSLObject rv = env.evalBlock(block);
+    if(env.returnValue != null) {
+      return env.returnValue;
+    } else {
+      return rv;
+    }
+  }
+}
+

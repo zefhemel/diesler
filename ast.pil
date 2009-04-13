@@ -1,0 +1,234 @@
+import "object.pil"
+
+import diesler
+import diesler::util
+
+String diesler::util::spaces(Int n) {
+  var m = new MutableString();
+  for(Int i = 0; i < n; i++) {
+    m.append("  ");
+  }
+  return m.as<String>;
+}
+
+class diesler::Term extends DSLObject {
+  new(DSLClass instanceOf) extends super(instanceOf) {
+  }
+
+  String toIndentedString(Int depth) {
+    return this.as<String>;
+  }
+}
+
+class diesler::MessageSendTerm extends diesler::Term {
+  Term object = null;
+  String selector = null;
+  Array<Term> arguments = null;
+
+  new(Term object, String selector, Array<Term> arguments) extends super(rootNamespace["ASTMessageSend"]) {
+    this.object = object;
+    this.selector = selector;
+    this.arguments = arguments;
+  }
+
+  String toIndentedString(Int depth) {
+    var s = new MutableString();
+    s.append(spaces(depth));
+    s.append("(");
+    if(object != null) {
+      s.append(object.as<String>);
+      s.append(" ");
+    }
+    s.append(selector);
+    var sawCons = false;
+    for(Term t: arguments) {
+      if(t instanceof MessageSendTerm) {
+        s.append("\n");
+        sawCons = true;
+      } else {
+        s.append(' ');
+      }
+      s.append(t.toIndentedString(depth+1));
+    }
+    s.append(')');
+    return s.as<String>;
+  }
+
+  as<String> {
+    return toIndentedString(0);
+  }
+}
+
+class diesler::BlockTerm extends diesler::Term {
+  Array<Term> statements = null;
+
+  new(Array<Term> statements) extends super(rootNamespace["ASTBlock"]) {
+    this.statements = statements;
+  }
+
+  String toIndentedString(Int depth) {
+    var s = new MutableString();
+    s.append("[\n");
+    for(Term t : statements) {
+      s.append(t.toIndentedString(depth+1));
+      s.append('\n');
+    }
+    s.append(spaces(depth));
+    s.append("]");
+    return s.as<String>;
+  }
+
+  as<String> {
+    return toIndentedString(0);
+  }
+}
+
+class diesler::MethodDefTerm extends diesler::Term {
+  MethodSignature signature = null;
+  Array<Term> statements = null;
+
+  new(MethodSignature signature, Array<Term> statements) extends super(rootNamespace["ASTMethodDef"]) {
+    this.signature = signature;
+    this.statements = statements;
+  }
+
+  String toIndentedString(Int depth) {
+    var s = new MutableString();
+    s.append(signature.as<String>);
+    s.append(" [\n");
+    for(Term t : statements) {
+      s.append(t.toIndentedString(depth+1));
+      s.append('\n');
+    }
+    s.append(spaces(depth));
+    s.append("]");
+    return s.as<String>;
+  }
+
+  as<String> {
+    return toIndentedString(0);
+  }
+}
+
+class diesler::MethodSignature extends diesler::Term {
+  String selector = null;
+  Array<String> arguments = null;
+
+  new(String selector, Array<String> arguments) extends super(rootNamespace["ASTMethodSignature"]) {
+    this.selector = selector;
+    this.arguments = arguments;
+  }
+}
+
+class diesler::AssignTerm extends diesler::Term {
+  Term lhs = null;
+  Term value = null;
+
+  new(Term lhs, Term value) extends super(rootNamespace["ASTAssignment"]) {
+    this.lhs = lhs;
+    this.value = value;
+  }
+
+  String toIndentedString(Int depth) {
+    var s = new MutableString();
+    s.append("(=\n");
+    s.append(spaces(depth) + lhs.toIndentedString(depth+1) + "\n");
+    s.append(spaces(depth) + value.toIndentedString(depth+1));
+    s.append(")");
+    return s.as<String>;
+  }
+}
+
+class diesler::ListTerm extends diesler::Term {
+  Array<Term> values = null;
+
+  new(Array<Term> values) extends super(rootNamespace["ASTList"]) {
+    this.values = values;
+  }
+
+  String toIndentedString(Int depth) {
+    var s = new MutableString();
+    for(Term value : values) {
+      s.append(value.as<String>);
+      if(value != values[values.length-1]) {
+        s.append(", ");
+      }
+    }
+    return s.as<String>;
+  }
+}
+
+class diesler::IntTerm extends diesler::Term {
+  Int value = 0;
+
+  new(Int value) extends super(rootNamespace["ASTInt"]) {
+    this.value = value;
+  }
+
+  Bool ==(Object o) {
+    if(o == null) {
+      return false;
+    }
+    if(o instanceof IntTerm) {
+      return o.as<IntTerm>.value == value;
+    } else {
+      return false;
+    }
+  }
+
+  as<String> {
+    var ms = new MutableString();
+    ms.append(value);
+    return ms.as<String>;
+  }
+}
+
+class diesler::BoolTerm extends diesler::Term {
+  Bool value = false;
+
+  new(Bool value) extends super(rootNamespace["ASTBool"]) {
+    this.value = value;
+  }
+
+  as<String> {
+    var ms = new MutableString();
+    ms.append(value);
+    return ms.as<String>;
+  }
+}
+
+class diesler::StringTerm extends diesler::Term {
+  String value = null;
+
+  new(String value) extends super(rootNamespace["ASTString"]) {
+    this.value = value;
+  }
+
+  Bool ==(Object o) {
+    if(o == null) {
+      return false;
+    }
+    if(o instanceof StringTerm) {
+      return o.as<StringTerm>.value == value;
+    } else {
+      return false;
+    }
+  }
+
+  as<String> {
+    return "\"" + value + "\"";
+  }
+}
+
+class diesler::IdnTerm extends diesler::Term {
+  String idn = null;
+
+  new(String idn) extends super(rootNamespace["ASTIdentifier"]) {
+    this.idn = idn;
+  }
+
+  as<String> {
+    return idn;
+  }
+}
+

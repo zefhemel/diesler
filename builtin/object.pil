@@ -1,0 +1,198 @@
+import "object.pil"
+
+import diesler
+import diesler::exception
+
+DSLClass diesler::builtin::object::init() {
+  var object = new DSLClass(null, "Object");
+
+  object.methods["new"] = new diesler::builtin::object::NewInstanceMethod();
+  object.methods["defineInstanceMethods:"] = new diesler::builtin::object::DefineMethods(true);
+  object.methods["defineMethods:"] = new diesler::builtin::object::DefineMethods(false);
+  object.methods["subClass:withMethods:"] = new diesler::builtin::object::SubclassMethod();
+  object.methods["importNativeClass:"] = new diesler::builtin::native::NewNativeClassMethod();
+
+  object.instanceMethods["=="] = new diesler::builtin::object::EqMethod();
+  object.instanceMethods["!="] = new diesler::builtin::object::NotEqMethod();
+
+  object.instanceMethods["set:to:"] = new diesler::builtin::object::SetFieldMethod();
+  object.instanceMethods["get:"] = new diesler::builtin::object::GetFieldMethod();
+  object.instanceMethods["describe"] = new diesler::builtin::object::DescribeMethod();
+  object.instanceMethods["defineMethods:"] = new diesler::builtin::object::DefineMethods(false);
+
+  object.instanceMethods["print:"] = new diesler::builtin::object::PrintMethod();
+  object.instanceMethods["if:then:"] = new diesler::builtin::object::IfThenMethod();
+  object.instanceMethods["if:then:else:"] = new diesler::builtin::object::IfThenElseMethod();
+  object.instanceMethods["while:do:"] = new diesler::builtin::object::WhileMethod();
+  return object;
+}
+
+class diesler::builtin::object::NewInstanceMethod extends DSLMethod {
+  new() extends super("new", new Array<String>(), null) {
+    this.cls = cls;
+  }
+
+  DSLObject invoke(DSLObject o, Array<DSLObject> args) {
+    return new DSLObject(o.as<DSLClass>);
+  }
+}
+
+class diesler::builtin::object::SetFieldMethod extends DSLMethod {
+  new() extends super("set:to:", new Array<String>("fieldName", "value"), null) {
+  }
+
+  DSLObject invoke(DSLObject o, Array<DSLObject> args) {
+    var fieldName = args[0].as<DSLString>.value;
+    o.setField(fieldName, args[1]);
+    return o;
+  }
+}
+
+class diesler::builtin::object::GetFieldMethod extends DSLMethod {
+  new() extends super("get:", new Array<String>("fieldName"), null) {
+  }
+
+  DSLObject invoke(DSLObject o, Array<DSLObject> args) {
+    var fieldName = args[0].as<DSLString>.value;
+    return o.getField(fieldName);
+  }
+}
+
+class diesler::builtin::object::DescribeMethod extends DSLMethod {
+  new() extends super("describe", new Array<String>(), null) {
+  }
+
+  DSLObject invoke(DSLObject o, Array<DSLObject> args) {
+    return new DSLString(o.as<String>);
+  }
+}
+
+class diesler::builtin::object::PrintMethod extends DSLMethod {
+  new() extends super("print:", new Array<String>("str"), null) {
+  }
+
+  DSLObject invoke(DSLObject o, Array<DSLObject> args) {
+    println(args[0].as<String>);
+    return o;
+  }
+}
+
+class diesler::builtin::object::DefineMethods extends DSLMethod {
+  Bool instanceMethods = true;
+
+  new(Bool instanceMethods) extends super("defineMethods:", new Array<String>("methods"), null) {
+    this.instanceMethods = instanceMethods;
+  }
+
+  DSLObject invoke(DSLObject self, Array<DSLObject> args) {
+    var method = args[0].as<DSLMethod>;
+    for(MethodDefTerm mdt : method.block.statements) {
+      var newMethod = new DSLMethod(mdt.signature.selector, mdt.signature.arguments, new BlockTerm(mdt.statements));
+      if(self instanceof DSLClass && instanceMethods) {
+        self.as<DSLClass>.instanceMethods[mdt.signature.selector] = newMethod;
+      } else {
+        self.methods[mdt.signature.selector] = newMethod;
+      }
+    }
+    return self;
+  }
+}
+
+class diesler::builtin::object::SubclassMethod extends DSLMethod {
+  new() extends super("subClass:withMethods:", new Array<String>("className", "methods"), null) {
+  }
+
+  DSLObject invoke(DSLObject self, Array<DSLObject> args) {
+    var className = args[0].as<DSLString>.value;
+    var definitions = args[1].as<DSLMethod>; 
+    var cls = new DSLClass(self.as<DSLClass>, className);
+    for(MethodDefTerm mdt : definitions.block.statements) {
+      var newMethod = new DSLMethod(mdt.signature.selector, mdt.signature.arguments, new BlockTerm(mdt.statements));
+      cls.instanceMethods[mdt.signature.selector] = newMethod;
+    }
+    rootNamespace[className] = cls;
+    return cls;
+  }
+}
+
+class diesler::builtin::object::EqMethod extends DSLMethod {
+  new() extends super("==", new Array<String>("other"), null) {
+  }
+
+  DSLObject invoke(DSLObject o, Array<DSLObject> args) {
+    return new DSLBool(o == args[0]);
+  }
+}
+
+class diesler::builtin::object::NotEqMethod extends DSLMethod {
+  new() extends super("!=", new Array<String>("other"), null) {
+  }
+
+  DSLObject invoke(DSLObject o, Array<DSLObject> args) {
+    return new DSLBool(!(o == args[0]));
+  }
+}
+
+class diesler::builtin::object::IfThenMethod extends DSLMethod {
+  new() extends super("if:then:", new Array<String>("condition", "ifTrue"), null) {
+  }
+
+  DSLObject invoke(DSLObject o, Array<DSLObject> args) {
+    verifyType(args[0], typeof DSLMethod);
+    verifyType(args[1], typeof DSLMethod);
+    DSLMethod cond = args[0].as<DSLMethod>;
+    DSLMethod trueBlock = args[1].as<DSLMethod>;
+    DSLObject value = cond.invoke(o, new Array<DSLObject>());
+    if(!(value instanceof DSLBool)) {
+      throw new Exception("Condition should return in bool: " + cond.as<String>);
+    }
+    if(value.as<DSLBool>.value) {
+      return trueBlock.invoke(o, new Array<DSLObject>());
+    }
+    return o;
+  }
+}
+
+class diesler::builtin::object::IfThenElseMethod extends DSLMethod {
+  new() extends super("if:then:else:", new Array<String>("condition", "ifTrue", "ifFalse"), null) {
+  }
+
+  DSLObject invoke(DSLObject o, Array<DSLObject> args) {
+    verifyType(args[0], typeof DSLMethod);
+    verifyType(args[1], typeof DSLMethod);
+    verifyType(args[2], typeof DSLMethod);
+    DSLMethod cond = args[0].as<DSLMethod>;
+    DSLMethod trueBlock = args[1].as<DSLMethod>;
+    DSLMethod falseBlock = args[2].as<DSLMethod>;
+    DSLObject value = cond.invoke(o, new Array<DSLObject>());
+    if(!(value instanceof DSLBool)) {
+      throw new Exception("Condition should return in bool: " + cond.as<String>);
+    }
+    if(value.as<DSLBool>.value) {
+      return trueBlock.invoke(o, new Array<DSLObject>());
+    } else {
+      return falseBlock.invoke(o, new Array<DSLObject>());
+    }
+  }
+}
+
+class diesler::builtin::object::WhileMethod extends DSLMethod {
+  new() extends super("while:do:", new Array<String>("condition", "block"), null) {
+  }
+
+  DSLObject invoke(DSLObject o, Array<DSLObject> args) {
+    verifyType(args[0], typeof DSLMethod);
+    verifyType(args[1], typeof DSLMethod);
+    DSLMethod cond = args[0].as<DSLMethod>;
+    DSLMethod block = args[1].as<DSLMethod>;
+    DSLObject value = cond.invoke(o, new Array<DSLObject>());
+    if(!(value instanceof DSLBool)) {
+      throw new Exception("Condition should return in bool: " + cond.as<String>);
+    }
+    while(value.as<DSLBool>.value) {
+      block.invoke(o, new Array<DSLObject>());
+      value = cond.invoke(o, new Array<DSLObject>());
+    }
+    return o;
+  }
+}

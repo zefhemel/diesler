@@ -1,0 +1,109 @@
+import "ast.pil"
+import "object.pil"
+import "builtin/object.pil"
+import "builtin/string.pil"
+import "builtin/int.pil"
+import "builtin/bool.pil"
+import "builtin/native.pil"
+
+import diesler
+import diesler::exception
+
+Map<String, DSLClass> diesler::rootNamespace = new Map<String, DSLClass>();
+
+
+void diesler::initInterpreter() {
+  rootNamespace["Object"] = diesler::builtin::object::init();
+  var object = rootNamespace["Object"];
+  var method = new DSLClass(object, "Method");
+  rootNamespace["Method"] = object;
+  rootNamespace["String"] = diesler::builtin::string::init();
+  rootNamespace["Int"] = diesler::builtin::int::init();
+  rootNamespace["Bool"] = diesler::builtin::bool::init();
+}
+
+
+class diesler::Env {
+  DSLObject self = null;
+  Map<String, DSLObject> variables = new Map<String, DSLObject>();
+  DSLObject returnValue = null;
+
+  new(DSLObject self) {
+    this.self = self;
+  }
+
+  DSLObject lookupVar(String var) {
+    if(var == "self") {
+      return self;
+    } else if(variables.contains(var)) {
+      return variables[var];
+    } else if(rootNamespace.contains(var)) {
+      return rootNamespace[var];
+    } else {
+      throw new Exception("Variable undefined: " + var);
+    }
+  }
+
+  DSLObject evalBlock(Term stats) {
+    if(stats instanceof BlockTerm) {
+      DSLObject lastValue = null;
+      for(Term t : stats.as<BlockTerm>.statements) {
+        lastValue = evalStatement(t);
+      }
+      return lastValue;
+    } else {
+      throw new Exception("Can't handle: " + stats.as<String>);
+    }
+  }
+
+  DSLObject evalStatement(Term stat) {
+    if(stat instanceof AssignTerm) {
+      var assign = stat.as<AssignTerm>;
+      variables[assign.lhs.as<IdnTerm>.idn] = evalExp(assign.value);
+      return null;
+    } else {
+      return evalExp(stat);
+    }
+  }
+
+  DSLObject evalExp(Term exp) {
+    if(exp instanceof IdnTerm) {
+      return lookupVar(exp.as<IdnTerm>.idn);
+    } else if(exp instanceof StringTerm) {
+      return new DSLString(exp.as<StringTerm>.value);
+    } else if(exp instanceof IntTerm) {
+      return new DSLInt(exp.as<IntTerm>.value);
+    } else if(exp instanceof BoolTerm) {
+      return new DSLBool(exp.as<BoolTerm>.value);
+    } else if(exp instanceof BlockTerm) {
+      var m = new DSLMethod("noname", new Array<String>(), exp.as<BlockTerm>);
+      m.closure = this;
+      return m;
+    } else if(exp instanceof MessageSendTerm) {
+      var ms = exp.as<MessageSendTerm>;
+      var o = evalExp(ms.object);
+      var args = new Array<DSLObject>(ms.arguments.length);
+      for(Int i = 0; i < ms.arguments.length; i++) {
+        args[i] = evalExp(ms.arguments[i]);
+      }
+      if(ms.selector == "return:") {
+        returnValue = args[0];
+        return returnValue;
+      }
+      var method = o.getMethod(ms.selector);
+      if(method == null) {
+        throw new NoSuchMethodException(ms.selector);
+      }
+      return method.invoke(o, args);
+    } else {
+      throw new Exception("Unsupported expression: " + exp.as<String>);
+    }
+  }
+
+  Env lightClone(DSLObject self) {
+    var e = new Env(self);
+    e.variables = variables;
+    e.returnValue = returnValue;
+    return e;
+  }
+}

@@ -1,0 +1,40 @@
+package diesler.builtin.native_;
+
+import diesler.DSLMethod;
+import diesler.DSLNativeClass;
+import diesler.DSLNativeObject;
+import diesler.DSLObject;
+import diesler.NativeUtils;
+
+public class NewNativeObjectMethod extends DSLMethod {
+	public NewNativeObjectMethod(String selector) {
+		super(selector, new String[] { "whatever" }, null);
+	}
+
+	@Override
+	public DSLObject invoke(DSLObject self, DSLObject[] args) {
+		if(args.length == 0) {
+			DSLNativeClass cls = (DSLNativeClass)self;
+			try {
+				Object o = cls.getWrappedClass().newInstance();
+				return new DSLNativeObject(cls, o);
+			} catch (Exception e) {
+				return null;
+			}
+		} else { // not implemented yet
+			DSLNativeClass cls = (DSLNativeClass)self;
+			Object[] javaArgs = new Object[args.length];
+		    Class[] argTypes = new Class[args.length];
+		    for(int i = 0; i < args.length; i++) {
+		        javaArgs[i] = NativeUtils.dieselToJava(args[i]);
+		        argTypes[i] = javaArgs[i].getClass();
+		    }
+			try {
+				Object o = cls.getWrappedClass().getConstructor(argTypes).newInstance(javaArgs);
+				return new DSLNativeObject(cls, o);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}
+	}
+}

@@ -1,0 +1,529 @@
+import "ast.pil"
+
+import diesler
+import diesler::util
+
+class diesler::ParseException extends Exception {
+  new(String message) extends super(message) {
+  }
+}
+
+class diesler::Parser {
+  String text = "";
+  Int i = 0;
+
+  Array<Array<String>> operators = new Array<Array<String>>(
+    new Array<String>("."),
+    new Array<String>("*", "/", "%"),
+    new Array<String>("+", "-"),
+    new Array<String>("<", "<=", ">", ">=", "==", "!="),
+    new Array<String>("!"),
+    new Array<String>("&"),
+    new Array<String>("|"),
+    new Array<String>("?", "$")
+    );
+
+  List<Char> allOps = new List<Char>('!', '@', '#', '%', '^', '&', '*', '-', '+', '=', '|', '/', '\\', '<', '>', '.', '?');
+
+  new(String text) {
+    this.text = text;
+  }
+
+  Term acceptFactor() {
+    var oldI = i;
+    var in = acceptInt();
+    if(in != -1) {
+      return new IntTerm(in);
+    }
+    var v = acceptIdn();
+    if(v != null) {
+      if(v == "true") {
+        return new BoolTerm(true);
+      } else if(v == "false") {
+        return new BoolTerm(false);
+      } else {
+        return new IdnTerm(v);
+      }
+    }
+    var s = acceptString();
+    if(s != null) {
+      return new StringTerm(s);
+    }
+    if(accept('(')) {
+      acceptWhiteSpace();
+      var exp = acceptStatement();
+      acceptWhiteSpace();
+      expect(')');
+      return exp;
+    }
+    var gr = acceptBlock();
+    if(gr != null) {
+      return gr;
+    }
+    var dgr = acceptDeclBlock();
+    if(dgr != null) {
+      return dgr;
+    }
+    return null;
+  }
+
+  BlockTerm acceptBlock() {
+    var oldI = i;
+    acceptWhiteSpace();
+    if(accept('{') || accept('[')) {
+      acceptAnyWhiteSpace();
+      var stats = new List<Term>();
+      while(!accept('}') && !accept(']')) {
+        var stat = acceptStatement();
+        if(stat == null) {
+          printRest();
+          throw new ParseException("Expected a statement, couln't parse it.");
+        }
+        stats.add(stat);
+        acceptWhiteSpace();
+        if(!acceptNewline() && !(lookAhead("]") || lookAhead("}"))) {
+          i = oldI;
+          return null;
+        } else {
+          acceptAnyWhiteSpace();
+        }
+      }
+      return new BlockTerm(stats.as<Array<Term>>);
+    }
+    return null;
+  }
+
+  Term acceptDeclBlock() {
+    var oldI = i;
+    if(accept('{')) {
+      acceptAnyWhiteSpace();
+      var decls = new List<Term>();
+      while(!accept('}')) {
+        String postfixMethodname = acceptIdnNoKeyword();
+        MethodSignature sig = null;
+        if(postfixMethodname != null) {
+          sig = new MethodSignature(postfixMethodname, new Array<String>());
+        } else {
+          sig = acceptKeywordMethodSignature();
+          if(sig == null) {
+            oldI = i;
+            return null;
+          }
+        } 
+        acceptWhiteSpace();
+        var b = acceptBlock();
+        if(b == null) {
+          i = oldI;
+          return null;
+        }
+        decls.add(new MethodDefTerm(sig, b.statements));
+        acceptAnyWhiteSpace();
+      }
+      return new BlockTerm(decls.as<Array<Term>>);
+    }
+    return null;
+  }
+
+  MethodSignature acceptKeywordMethodSignature() {
+    var selector = new MutableString();
+    var args = new List<String>();
+    acceptWhiteSpace();
+    var kw = acceptKeyword();
+    while(kw != null) {
+      selector.append(kw);
+      acceptWhiteSpace();
+      var arg = acceptIdnNoKeyword();
+      args.add(arg);
+      acceptWhiteSpace();
+      kw = acceptKeyword();
+    }
+    if(args.length > 0) {
+      return new MethodSignature(selector.as<String>, args.as<Array<String>>);
+    } else {
+      return null;
+    }
+  }
+
+  Term acceptGeneric(Int level) {
+    Term f = null;
+    if(level == 0) {
+      f = acceptFactor();
+    } else {
+      f = acceptGeneric(level-1);
+    }
+    if(f == null) {
+      return null;
+    }
+    var t = f;
+    var oldI = i;
+    acceptWhiteSpace();
+    var op = acceptOps(operators[level]);
+    acceptWhiteSpace();
+    while(op != null) {
+      Term t2 = null;
+      t2 = acceptGeneric(level);
+      if(t2 == null) {
+        printRest();
+        throw new ParseException("Expected an expression.");
+      }
+      t = new MessageSendTerm(t, op, new Array<Term>(t2));
+      oldI = i;
+      op = acceptOps(operators[level]);
+      acceptWhiteSpace();
+    }
+    i = oldI;
+    return t;
+  }
+
+  Term acceptPostfix() {
+    var t = acceptGeneric(operators.length-1);
+    var oldI = i;
+    acceptWhiteSpace();
+    var idn = acceptIdnNoKeyword();
+    while(idn != null) {
+      t = new MessageSendTerm(t, idn, new Array<Term>());
+      oldI = i;
+      acceptWhiteSpace();
+      idn = acceptIdnNoKeyword();
+    }
+    i = oldI;
+    return t;
+  }
+
+  Term acceptPostfixNoObject() {
+    Term t = null;
+    var oldI = i;
+    acceptWhiteSpace();
+    printRest();
+    var idn = acceptIdnNoKeyword();
+    while(idn != null) {
+      t = new MessageSendTerm(t, idn, new Array<Term>());
+      oldI = i;
+      acceptWhiteSpace();
+      printRest();
+      idn = acceptIdnNoKeyword();
+    }
+    i = oldI;
+    return t;
+  }
+
+  Term acceptMS() {
+    var t = acceptPostfix();
+    var selector = new MutableString();
+    var args = new List<Term>();
+    acceptWhiteSpace();
+    var kw = acceptKeyword();
+    while(kw != null) {
+      selector.append(kw);
+      acceptWhiteSpace();
+      var arg = acceptPostfix();
+      args.add(arg);
+      acceptWhiteSpace();
+      kw = acceptKeyword();
+    }
+    if(args.length > 0) {
+      return new MessageSendTerm(t, selector.as<String>, args.as<Array<Term>>);
+    } else {
+      return t;
+    }
+  }
+
+  Term acceptMSNoObject() {
+    var selector = new MutableString();
+    var args = new List<Term>();
+    acceptWhiteSpace();
+    var kw = acceptKeyword();
+    while(kw != null) {
+      selector.append(kw);
+      acceptWhiteSpace();
+      var arg = acceptPostfix();
+      args.add(arg);
+      acceptWhiteSpace();
+      kw = acceptKeyword();
+    }
+    if(args.length > 0) {
+      return new MessageSendTerm(null, selector.as<String>, args.as<Array<Term>>);
+    } else {
+      return null;
+    }
+  }
+
+  Term acceptList() {
+    acceptWhiteSpace();
+    Term t = acceptMS();
+    acceptWhiteSpace();
+    if(t != null && accept(',')) {
+      var items = new List<Term>();
+      items.add(t);
+      acceptWhiteSpace();
+      while(true) {
+        t = acceptMS();
+        acceptWhiteSpace();
+        if(t == null) {
+          return new ListTerm(items.as<Array<Term>>);
+        }
+        items.add(t);
+        if(!accept(',')) {
+          return new ListTerm(items.as<Array<Term>>);
+        }
+        acceptWhiteSpace();
+      }
+    }
+    return t;
+  }
+
+  Term acceptExp() {
+    acceptWhiteSpace();
+    var t = acceptList();
+    return t;
+  }
+
+  Term acceptAssign() {
+    var oldI = i;
+    var t = acceptFactor();
+    acceptWhiteSpace();
+    if(accept('=') && !accept('=')) {
+      acceptWhiteSpace();
+      var e = acceptStatement();
+      if(e == null) {
+        i = oldI;
+        return null;
+      }
+      return new AssignTerm(t, e);
+    } else {
+      i = oldI;
+      return null;
+    }
+  }
+
+  Term acceptStatement() {
+    Term t = acceptMSNoObject();
+    if(t == null) {
+      t = acceptAssign();
+      if(t == null) {
+        t = acceptExp();
+        if(t == null) {
+          printRest();
+          throw new ParseException("Could not parse exception.");
+        }
+      }
+    } else {
+      t.as<MessageSendTerm>.object = new IdnTerm("self");
+    }
+    return t;
+  }
+
+  BlockTerm acceptStatements() {
+    acceptWhiteSpace();
+    var stats = new List<Term>();
+    while(i < text.length-1) {
+      var exp = acceptStatement();
+      stats.add(exp);
+      acceptWhiteSpace();
+      if(!acceptNewline()) {
+        printRest();
+        throw new ParseException("new line expected");
+      }
+    }
+    return new BlockTerm(stats.as<Array<Term>>);
+  }
+
+
+  // ---------------------
+
+  Bool acceptWhiteSpace() {
+    var oldI = i;
+    while(i < text.length && (text[i] == ' ' || text[i] == '\t' || lookAhead("//") || lookAhead("/*"))) { 
+      if(lookAhead("//")) {
+        while(i < text.length && text[i] != '\n' && text[i] != '\r') {
+          i++;
+        }
+        i--;
+      } else if(lookAhead("/*")) {
+        while(i < text.length && !lookAhead("*/")) {
+          i++;
+        }
+        if(lookAhead("*/")) {
+          i = i + 2;
+        }
+      } else {
+        i++;
+      }
+    }
+    return oldI != i;
+  }
+
+  Bool acceptAnyWhiteSpace() {
+    var oldI = i;
+    while(acceptWhiteSpace() || acceptNewline()) {
+    }
+    return oldI != i;
+  }
+
+  Bool acceptNewline() {
+    acceptWhiteSpace();
+    var oldI = i;
+    while(i < text.length && (text[i] == '\n' || text[i] == '\r' || text[i] == ';')) {
+      i++;
+      acceptWhiteSpace();
+    }
+    return i == text.length || oldI != i;
+  }
+
+  void printRest() {
+    var m = new MutableString();
+    for(Int j = i; j < text.length; j++) {
+      m.append(text[j]);
+    }
+    print("Rest: |");
+    println(m.as<String>);
+  }
+
+  Bool lookAhead(String str) {
+    var parsedSomething = false;
+    for(Int j = 0; j < str.length && i+j < text.length; j++) {
+      if(text[j+i] != str[j]) {
+        return false;
+      }
+      if(i+j+1 == text.length && j+1 < str.length) {
+        return false;
+      }
+      parsedSomething = true;
+    }
+    return parsedSomething;
+  }
+
+  String acceptOps(Array<String> ops) {
+    for(String op : ops) {
+      if(lookAhead(op)) {
+        var opstr = new MutableString(op);
+        var oldI = i;
+        i = i + op.length;
+        while(i < text.length && allOps.contains(text[i])) {
+          opstr.append(text[i]);
+          i++;
+        }
+        if(text[i-1] != '=' || opstr.as<String> == op) {
+          return opstr.as<String>;
+        } else {
+          i = oldI;
+        }
+      }
+    }
+    return null;
+  }
+
+  String acceptKeyword() {
+    var oldI = i;
+    var idn = acceptIdn();
+    if(idn == null) {
+      return null;
+    } 
+    if(accept(':')) {
+      return idn + ":";
+    } else {
+      i = oldI;
+      return null;
+    }
+  }
+
+
+  Int acceptInt() {
+    if(i == text.length) {
+      return -1;
+    }
+    var s = new MutableString();
+    if(text[i] >= '0' && text[i] <= '9') {
+      while(i < text.length && text[i] >= '0' && text[i] <= '9') {
+        s.append(text[i]);
+        i++;
+      }
+      return s.as<Int>;
+    } else {
+      return -1;
+    }
+  }
+
+  String acceptString() {
+    if(i == text.length) {
+      return null;
+    }
+    var s = new MutableString();
+    if(text[i] == '"') {
+      i++;
+      while(i < text.length && text[i] != '"' && text[i-1] != '\\') {
+        if(!(text[i] == '\\' && i < (text.length + 1) && text[i+1] == '"')) {
+          s.append(text[i]);
+        }
+        i = i + 1;
+      }
+      i = i + 1;
+      return s.as<String>;
+    } else {
+      return null;
+    }
+  }
+
+  Bool accept(Char c) {
+    if(i == text.length) {
+      return false;
+    }
+    if(text[i] == c) {
+      i++;
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  void expect(Char c) {
+    if(i == text.length) {
+      print("Rest of the buffer: ");
+      printRest();
+      throw new ParseException("Expected: " + c.as<String>);
+    }
+    if(text[i] == c) {
+      i++;
+    } else {
+      print("Rest of the buffer: ");
+      printRest();
+      throw new ParseException("Expected: " + c.as<String>);
+    }
+  }
+
+  String acceptIdnNoKeyword() {
+    var oldI = i;
+    var idn = acceptIdn();
+    if(idn != null && !accept(':')) {
+      return idn;
+    } else {
+      i = oldI;
+      return null;
+    }
+  }
+
+  String acceptIdn() {
+    if(i == text.length) {
+      return null;
+    }
+    var oldI = i;
+    var sym = new MutableString();
+    if((text[i] >= 'a' && text[i] <= 'z') || 
+                              (text[i] >= 'A' && text[i] <= 'Z') ||
+                              (text[i] == '_')) {
+      sym.append(text[i]);
+      i++;
+    } else {
+      return null;
+    }
+    // Read constructor
+    while(i < text.length && ((text[i] >= 'a' && text[i] <= 'z') || 
+                              (text[i] >= 'A' && text[i] <= 'Z') ||
+                              (text[i] >= '0' && text[i] <= '9') ||
+                              (text[i] == '_'))) {
+      sym.append(text[i]);
+      i++;
+    }
+    return sym.as<String>;
+  }
+}

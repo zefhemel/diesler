@@ -1,0 +1,83 @@
+import "object.pil"
+
+import diesler
+import diesler::exception
+
+class diesler::DSLInt extends DSLObject {
+  Int value = 0;
+
+  new(Int value) extends super(rootNamespace["Int"]) {
+    this.value = value;
+  }
+
+  as<String> {
+    return value.as<String>;
+  }
+
+  Bool ==(Object other) {
+    if(other == null) {
+      return false;
+    }
+    if(other instanceof DSLInt) {
+      return value == other.as<DSLInt>.value;
+    } else {
+      return false;
+    }
+  }
+}
+
+DSLClass diesler::builtin::int::init() {
+  var int = new DSLClass(rootNamespace["Object"], "Int");
+  int.instanceMethods["+"] = new diesler::builtin::int::AddMethod();
+  int.instanceMethods["-"] = new diesler::builtin::int::SubstractMethod();
+  int.instanceMethods["*"] = new diesler::builtin::int::MultiplyMethod();
+
+  int.instanceMethods["<="] = new diesler::builtin::int::LessEqualMethod();
+  int.instanceMethods[">="] = new diesler::builtin::int::GreaterEqualMethod();
+  return int;
+}
+
+class diesler::builtin::int::AddMethod extends DSLMethod {
+  new() extends super("+", new Array<String>("other"), null) {
+  }
+
+  DSLObject invoke(DSLObject o, Array<DSLObject> args) {
+    return new DSLInt(o.as<DSLInt>.value + args[0].as<DSLInt>.value);
+  }
+}
+
+class diesler::builtin::int::SubstractMethod extends DSLMethod {
+  new() extends super("-", new Array<String>("other"), null) {
+  }
+
+  DSLObject invoke(DSLObject o, Array<DSLObject> args) {
+    return new DSLInt(o.as<DSLInt>.value - args[0].as<DSLInt>.value);
+  }
+}
+
+class diesler::builtin::int::MultiplyMethod extends DSLMethod {
+  new() extends super("*", new Array<String>("other"), null) {
+  }
+
+  DSLObject invoke(DSLObject o, Array<DSLObject> args) {
+    return new DSLInt(o.as<DSLInt>.value * args[0].as<DSLInt>.value);
+  }
+}
+
+class diesler::builtin::int::LessEqualMethod extends DSLMethod {
+  new() extends super("<=", new Array<String>("other"), null) {
+  }
+
+  DSLObject invoke(DSLObject o, Array<DSLObject> args) {
+    return new DSLBool(o.as<DSLInt>.value <= args[0].as<DSLInt>.value);
+  }
+}
+
+class diesler::builtin::int::GreaterEqualMethod extends DSLMethod {
+  new() extends super(">=", new Array<String>("other"), null) {
+  }
+
+  DSLObject invoke(DSLObject o, Array<DSLObject> args) {
+    return new DSLBool(o.as<DSLInt>.value >= args[0].as<DSLInt>.value);
+  }
+}
