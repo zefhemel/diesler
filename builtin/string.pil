@@ -6,7 +6,7 @@ import diesler::exception
 class diesler::DSLString extends DSLObject {
   String value = null;
 
-  new(String value) extends super(rootNamespace["String"]) {
+  new(Scope scope, String value) extends super(scope["String"].as<DSLClass>) {
     this.value = value;
   }
 
@@ -26,18 +26,18 @@ class diesler::DSLString extends DSLObject {
   }
 }
 
-DSLClass diesler::builtin::string::init() {
-  var string = new DSLClass(rootNamespace["Object"], "String");
-  string.instanceMethods["+"] = new diesler::builtin::string::StringConcatMethod();
+DSLClass diesler::builtin::string::init(Scope scope) {
+  var string = new DSLClass(scope, scope["Object"].as<DSLClass>, "String");
+  string.instanceMethods["+"] = new diesler::builtin::string::StringConcatMethod(scope);
   return string;
 }
 
 class diesler::builtin::string::StringConcatMethod extends DSLMethod {
-  new() extends super("+", new Array<String>("str"), null) {
+  new(Scope scope) extends super(scope, "+", new Array<String>("str"), null) {
   }
 
-  DSLObject invoke(DSLObject o, Array<DSLObject> args) {
-    return new DSLString(o.as<DSLString>.value + args[0].as<DSLString>.value);
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    return new DSLString(scope, o.as<DSLString>.value + args[0].as<DSLString>.value);
   }
 }
 

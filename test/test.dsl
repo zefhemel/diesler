@@ -35,7 +35,7 @@ counter = counter plusOne
 counter = counter plusOne
 print: counter
 
-Object subClass: "User" withMethods: {
+User = Object subClass: "User" withMethods: {
   init {
     set: "name" to: "unkown"
     set: "age" to: 0

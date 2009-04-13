@@ -12,7 +12,7 @@ String diesler::util::spaces(Int n) {
 }
 
 class diesler::Term extends DSLObject {
-  new(DSLClass instanceOf) extends super(instanceOf) {
+  new(DSLObject instanceOf) extends super(instanceOf.as<DSLClass>) {
   }
 
   String toIndentedString(Int depth) {
@@ -25,7 +25,7 @@ class diesler::MessageSendTerm extends diesler::Term {
   String selector = null;
   Array<Term> arguments = null;
 
-  new(Term object, String selector, Array<Term> arguments) extends super(rootNamespace["ASTMessageSend"]) {
+  new(Scope scope, Term object, String selector, Array<Term> arguments) extends super(scope["ASTMessageSend"]) {
     this.object = object;
     this.selector = selector;
     this.arguments = arguments;
@@ -62,7 +62,7 @@ class diesler::MessageSendTerm extends diesler::Term {
 class diesler::BlockTerm extends diesler::Term {
   Array<Term> statements = null;
 
-  new(Array<Term> statements) extends super(rootNamespace["ASTBlock"]) {
+  new(Scope scope, Array<Term> statements) extends super(scope["ASTBlock"]) {
     this.statements = statements;
   }
 
@@ -87,7 +87,7 @@ class diesler::MethodDefTerm extends diesler::Term {
   MethodSignature signature = null;
   Array<Term> statements = null;
 
-  new(MethodSignature signature, Array<Term> statements) extends super(rootNamespace["ASTMethodDef"]) {
+  new(Scope scope, MethodSignature signature, Array<Term> statements) extends super(scope["ASTMethodDef"]) {
     this.signature = signature;
     this.statements = statements;
   }
@@ -114,7 +114,7 @@ class diesler::MethodSignature extends diesler::Term {
   String selector = null;
   Array<String> arguments = null;
 
-  new(String selector, Array<String> arguments) extends super(rootNamespace["ASTMethodSignature"]) {
+  new(Scope scope, String selector, Array<String> arguments) extends super(scope["ASTMethodSignature"]) {
     this.selector = selector;
     this.arguments = arguments;
   }
@@ -124,7 +124,7 @@ class diesler::AssignTerm extends diesler::Term {
   Term lhs = null;
   Term value = null;
 
-  new(Term lhs, Term value) extends super(rootNamespace["ASTAssignment"]) {
+  new(Scope scope, Term lhs, Term value) extends super(scope["ASTAssignment"]) {
     this.lhs = lhs;
     this.value = value;
   }
@@ -142,7 +142,7 @@ class diesler::AssignTerm extends diesler::Term {
 class diesler::ListTerm extends diesler::Term {
   Array<Term> values = null;
 
-  new(Array<Term> values) extends super(rootNamespace["ASTList"]) {
+  new(Scope scope, Array<Term> values) extends super(scope["ASTList"]) {
     this.values = values;
   }
 
@@ -161,7 +161,7 @@ class diesler::ListTerm extends diesler::Term {
 class diesler::IntTerm extends diesler::Term {
   Int value = 0;
 
-  new(Int value) extends super(rootNamespace["ASTInt"]) {
+  new(Scope scope, Int value) extends super(scope["ASTInt"]) {
     this.value = value;
   }
 
@@ -186,7 +186,7 @@ class diesler::IntTerm extends diesler::Term {
 class diesler::BoolTerm extends diesler::Term {
   Bool value = false;
 
-  new(Bool value) extends super(rootNamespace["ASTBool"]) {
+  new(Scope scope, Bool value) extends super(scope["ASTBool"]) {
     this.value = value;
   }
 
@@ -200,7 +200,7 @@ class diesler::BoolTerm extends diesler::Term {
 class diesler::StringTerm extends diesler::Term {
   String value = null;
 
-  new(String value) extends super(rootNamespace["ASTString"]) {
+  new(Scope scope, String value) extends super(scope["ASTString"]) {
     this.value = value;
   }
 
@@ -223,7 +223,7 @@ class diesler::StringTerm extends diesler::Term {
 class diesler::IdnTerm extends diesler::Term {
   String idn = null;
 
-  new(String idn) extends super(rootNamespace["ASTIdentifier"]) {
+  new(Scope scope, String idn) extends super(scope["ASTIdentifier"]) {
     this.idn = idn;
   }
 

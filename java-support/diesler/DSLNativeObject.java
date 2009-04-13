@@ -6,10 +6,12 @@ import diesler.exception.NoSuchMethodException;
 
 public class DSLNativeObject extends DSLObject {
 	Object obj = null;
+	diesler.Scope scope;
 	
-	public DSLNativeObject(DSLClass cls, Object obj) {
+	public DSLNativeObject(diesler.Scope scope, DSLClass cls, Object obj) {
 		super(cls);
 		this.obj = obj;
+		this.scope = scope;
 	}
 
 	@Override
@@ -20,9 +22,9 @@ public class DSLNativeObject extends DSLObject {
 			Class<Object> cls = (Class<Object>) obj.getClass();
 			for(Method m : cls.getMethods()) {
 				if(m.getParameterTypes().length == 0 && m.getName().equals(selector)) {
-					return new DSLNativeMethod(selector);
+					return new DSLNativeMethod(scope, selector);
 				} else if(m.getParameterTypes().length > 0 && selector.equals(m.getName() + ":")) {
-					return new DSLNativeMethod(selector);
+					return new DSLNativeMethod(scope, selector);
 				}
 			}
 			throw new NoSuchMethodException(selector);

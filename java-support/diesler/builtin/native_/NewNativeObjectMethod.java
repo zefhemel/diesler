@@ -7,17 +7,17 @@ import diesler.DSLObject;
 import diesler.NativeUtils;
 
 public class NewNativeObjectMethod extends DSLMethod {
-	public NewNativeObjectMethod(String selector) {
-		super(selector, new String[] { "whatever" }, null);
+	public NewNativeObjectMethod(diesler.Scope scope, String selector) {
+		super(scope, selector, new String[] { "whatever" }, null);
 	}
 
 	@Override
-	public DSLObject invoke(DSLObject self, DSLObject[] args) {
+	public DSLObject invoke(diesler.Scope scope, DSLObject self, DSLObject[] args) {
 		if(args.length == 0) {
 			DSLNativeClass cls = (DSLNativeClass)self;
 			try {
 				Object o = cls.getWrappedClass().newInstance();
-				return new DSLNativeObject(cls, o);
+				return new DSLNativeObject(scope, cls, o);
 			} catch (Exception e) {
 				return null;
 			}
@@ -31,7 +31,7 @@ public class NewNativeObjectMethod extends DSLMethod {
 		    }
 			try {
 				Object o = cls.getWrappedClass().getConstructor(argTypes).newInstance(javaArgs);
-				return new DSLNativeObject(cls, o);
+				return new DSLNativeObject(scope, cls, o);
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}

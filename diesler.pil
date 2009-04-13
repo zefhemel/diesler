@@ -8,20 +8,23 @@ import diesler
 
 void main(Array<String> args) {
   String input = null;
-  initInterpreter();
+  var rootScope = new Scope(null, null);
+  initInterpreter(rootScope);
+  rootScope.self = new DSLObject(rootScope["Object"].as<DSLClass>);
   if(args.length > 0) {
     var file = new pil::io::ReadFile(args[0]);
     var content = file.readAll();
     file.close();
-    var parsed = new Parser(content).acceptStatements();
-    new Env(new DSLObject(diesler::rootNamespace["Object"])).evalBlock(parsed);
+    var parsed = new Parser(rootScope, content).acceptStatements();
+    //new Scope(new DSLObject(diesler::rootNamespace["Object"])).evalBlock(parsed);
+    rootScope.evalBlock(parsed);
   } else {
     println("Welcome to diesler, type :q to quit.");
     while(input != ":q") {
       print("> ");
       input = readln();
       if(input != ":q") {
-        println(new Parser(input).acceptStatements().toIndentedString(0));
+        println(new Parser(rootScope, input).acceptStatements().toIndentedString(0));
       }
     }
   }

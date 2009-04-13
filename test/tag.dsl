@@ -1,5 +1,7 @@
+set: "counter" to: 0
 defineMethods: {
   takX: x y: y z: z {
+    set: "counter" to: ((get: "counter") + 1)
     if: [ y >= x ] then: {
        return: z
     } else: {
@@ -9,3 +11,4 @@ defineMethods: {
 }
 
 print: (takX: 24 y: 16 z: 8)
+print: (get: "counter")

@@ -5,12 +5,12 @@ import java.lang.reflect.Method;
 
 public class DSLNativeMethod extends DSLMethod {
 
-	public DSLNativeMethod(String selector) {
-		super(selector, new String[] { "args" }, null);
+	public DSLNativeMethod(diesler.Scope scope, String selector) {
+		super(scope, selector, new String[] { "args" }, null);
 	}
 
 	@Override
-	public DSLObject invoke(DSLObject self, DSLObject[] args) {
+	public DSLObject invoke(diesler.Scope scope, DSLObject self, DSLObject[] args) {
 		try {
 		    Object[] javaArgs = new Object[args.length];
 		    Class[] argTypes = new Class[args.length];
@@ -24,7 +24,7 @@ public class DSLNativeMethod extends DSLMethod {
 		        methodName = methodName.replace(":", "");
 		    }
 			Object result = o.getClass().getMethod(methodName, argTypes).invoke(o, javaArgs);
-			return NativeUtils.javaToDiesel(result);
+			return NativeUtils.javaToDiesel(scope, result);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

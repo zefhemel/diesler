@@ -70,7 +70,7 @@ class diesler::DSLClass extends DSLObject {
   String name = null;
   Map<String, DSLMethod> instanceMethods = new Map<String, DSLMethod>();
 
-  new(DSLClass superClass, String name) extends super(rootNamespace["Object"]) {
+  new(Scope scope, DSLClass superClass, String name) extends super(scope["Object"].as<DSLClass>) {
     this.superClass = superClass;
     this.name = name;
   }
@@ -92,9 +92,9 @@ class diesler::DSLMethod extends DSLObject {
   Array<String> argumentNames = null;
   BlockTerm block = null;
   String selector = null;
-  Env closure = null;
+  Scope closure = null;
 
-  new(String selector, Array<String> argumentNames, BlockTerm block) extends super(rootNamespace["Method"]){
+  new(Scope scope, String selector, Array<String> argumentNames, BlockTerm block) extends super(scope["Method"].as<DSLClass>){
     this.argumentNames = argumentNames;
     this.block = block;
     this.selector = selector;
@@ -107,19 +107,19 @@ class diesler::DSLMethod extends DSLObject {
     }
   }
 
-  DSLObject invoke(DSLObject self, Array<DSLObject> args) {
-    Env env = null;
+  DSLObject invoke(Scope scope, DSLObject self, Array<DSLObject> args) {
+    Scope localScope = null;
     if(closure != null) {
-      env = closure.lightClone(self);
+      localScope = closure.createLightSubScope(self);
     } else {
-      env = new Env(self);
+      localScope = new Scope(scope, self);
     }
     for(Int i = 0; i < argumentNames.length; i++) {
-      env.variables[argumentNames[i]] = args[i];
+      localScope.variables[argumentNames[i]] = args[i];
     }
-    DSLObject rv = env.evalBlock(block);
-    if(env.returnValue != null) {
-      return env.returnValue;
+    DSLObject rv = localScope.evalBlock(block);
+    if(localScope.returnValue != null) {
+      return localScope.returnValue;
     } else {
       return rv;
     }

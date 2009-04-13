@@ -1,4 +1,5 @@
 import "ast.pil"
+import "interpreter.pil"
 
 import diesler
 import diesler::util
@@ -11,6 +12,7 @@ class diesler::ParseException extends Exception {
 class diesler::Parser {
   String text = "";
   Int i = 0;
+  Scope scope = null;
 
   Array<Array<String>> operators = new Array<Array<String>>(
     new Array<String>("."),
@@ -25,7 +27,8 @@ class diesler::Parser {
 
   List<Char> allOps = new List<Char>('!', '@', '#', '%', '^', '&', '*', '-', '+', '=', '|', '/', '\\', '<', '>', '.', '?');
 
-  new(String text) {
+  new(Scope scope, String text) {
+    this.scope = scope;
     this.text = text;
   }
 
@@ -33,21 +36,21 @@ class diesler::Parser {
     var oldI = i;
     var in = acceptInt();
     if(in != -1) {
-      return new IntTerm(in);
+      return new IntTerm(scope, in);
     }
     var v = acceptIdn();
     if(v != null) {
       if(v == "true") {
-        return new BoolTerm(true);
+        return new BoolTerm(scope, true);
       } else if(v == "false") {
-        return new BoolTerm(false);
+        return new BoolTerm(scope, false);
       } else {
-        return new IdnTerm(v);
+        return new IdnTerm(scope, v);
       }
     }
     var s = acceptString();
     if(s != null) {
-      return new StringTerm(s);
+      return new StringTerm(scope, s);
     }
     if(accept('(')) {
       acceptWhiteSpace();
@@ -88,7 +91,7 @@ class diesler::Parser {
           acceptAnyWhiteSpace();
         }
       }
-      return new BlockTerm(stats.as<Array<Term>>);
+      return new BlockTerm(scope, stats.as<Array<Term>>);
     }
     return null;
   }
@@ -102,7 +105,7 @@ class diesler::Parser {
         String postfixMethodname = acceptIdnNoKeyword();
         MethodSignature sig = null;
         if(postfixMethodname != null) {
-          sig = new MethodSignature(postfixMethodname, new Array<String>());
+          sig = new MethodSignature(scope, postfixMethodname, new Array<String>());
         } else {
           sig = acceptKeywordMethodSignature();
           if(sig == null) {
@@ -116,10 +119,10 @@ class diesler::Parser {
           i = oldI;
           return null;
         }
-        decls.add(new MethodDefTerm(sig, b.statements));
+        decls.add(new MethodDefTerm(scope, sig, b.statements));
         acceptAnyWhiteSpace();
       }
-      return new BlockTerm(decls.as<Array<Term>>);
+      return new BlockTerm(scope, decls.as<Array<Term>>);
     }
     return null;
   }
@@ -138,7 +141,7 @@ class diesler::Parser {
       kw = acceptKeyword();
     }
     if(args.length > 0) {
-      return new MethodSignature(selector.as<String>, args.as<Array<String>>);
+      return new MethodSignature(scope, selector.as<String>, args.as<Array<String>>);
     } else {
       return null;
     }
@@ -166,7 +169,7 @@ class diesler::Parser {
         printRest();
         throw new ParseException("Expected an expression.");
       }
-      t = new MessageSendTerm(t, op, new Array<Term>(t2));
+      t = new MessageSendTerm(scope, t, op, new Array<Term>(t2));
       oldI = i;
       op = acceptOps(operators[level]);
       acceptWhiteSpace();
@@ -181,7 +184,7 @@ class diesler::Parser {
     acceptWhiteSpace();
     var idn = acceptIdnNoKeyword();
     while(idn != null) {
-      t = new MessageSendTerm(t, idn, new Array<Term>());
+      t = new MessageSendTerm(scope, t, idn, new Array<Term>());
       oldI = i;
       acceptWhiteSpace();
       idn = acceptIdnNoKeyword();
@@ -197,7 +200,7 @@ class diesler::Parser {
     printRest();
     var idn = acceptIdnNoKeyword();
     while(idn != null) {
-      t = new MessageSendTerm(t, idn, new Array<Term>());
+      t = new MessageSendTerm(scope, t, idn, new Array<Term>());
       oldI = i;
       acceptWhiteSpace();
       printRest();
@@ -222,7 +225,7 @@ class diesler::Parser {
       kw = acceptKeyword();
     }
     if(args.length > 0) {
-      return new MessageSendTerm(t, selector.as<String>, args.as<Array<Term>>);
+      return new MessageSendTerm(scope, t, selector.as<String>, args.as<Array<Term>>);
     } else {
       return t;
     }
@@ -242,7 +245,7 @@ class diesler::Parser {
       kw = acceptKeyword();
     }
     if(args.length > 0) {
-      return new MessageSendTerm(null, selector.as<String>, args.as<Array<Term>>);
+      return new MessageSendTerm(scope, null, selector.as<String>, args.as<Array<Term>>);
     } else {
       return null;
     }
@@ -260,11 +263,11 @@ class diesler::Parser {
         t = acceptMS();
         acceptWhiteSpace();
         if(t == null) {
-          return new ListTerm(items.as<Array<Term>>);
+          return new ListTerm(scope, items.as<Array<Term>>);
         }
         items.add(t);
         if(!accept(',')) {
-          return new ListTerm(items.as<Array<Term>>);
+          return new ListTerm(scope, items.as<Array<Term>>);
         }
         acceptWhiteSpace();
       }
@@ -289,7 +292,7 @@ class diesler::Parser {
         i = oldI;
         return null;
       }
-      return new AssignTerm(t, e);
+      return new AssignTerm(scope, t, e);
     } else {
       i = oldI;
       return null;
@@ -308,7 +311,7 @@ class diesler::Parser {
         }
       }
     } else {
-      t.as<MessageSendTerm>.object = new IdnTerm("self");
+      t.as<MessageSendTerm>.object = new IdnTerm(scope, "self");
     }
     return t;
   }
@@ -325,7 +328,7 @@ class diesler::Parser {
         throw new ParseException("new line expected");
       }
     }
-    return new BlockTerm(stats.as<Array<Term>>);
+    return new BlockTerm(scope, stats.as<Array<Term>>);
   }
 
 

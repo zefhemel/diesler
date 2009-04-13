@@ -14,13 +14,13 @@ public class NativeUtils {
         throw new RuntimeException("Could not convert this diesler object: " + o);
     }
     
-    public static DSLObject javaToDiesel(Object o) {
+    public static DSLObject javaToDiesel(diesler.Scope scope, Object o) {
         if(o instanceof String) {
-            return new DSLString((String)o);
+            return new DSLString(scope, (String)o);
         }
         if(o instanceof Integer) {
-            return new DSLInt((Integer)o);
+            return new DSLInt(scope, (Integer)o);
         }
-        return new DSLNativeObject(new DSLNativeClass((Class<Object>)o.getClass()), o);
+        return new DSLNativeObject(scope, new DSLNativeClass(scope, (Class<Object>)o.getClass()), o);
     }
 }

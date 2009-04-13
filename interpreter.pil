@@ -9,39 +9,44 @@ import "builtin/native.pil"
 import diesler
 import diesler::exception
 
-Map<String, DSLClass> diesler::rootNamespace = new Map<String, DSLClass>();
+//Map<String, DSLClass> diesler::rootNamespace = new Map<String, DSLClass>();
 
 
-void diesler::initInterpreter() {
-  rootNamespace["Object"] = diesler::builtin::object::init();
-  var object = rootNamespace["Object"];
-  var method = new DSLClass(object, "Method");
-  rootNamespace["Method"] = object;
-  rootNamespace["String"] = diesler::builtin::string::init();
-  rootNamespace["Int"] = diesler::builtin::int::init();
-  rootNamespace["Bool"] = diesler::builtin::bool::init();
+void diesler::initInterpreter(Scope scope) {
+  scope["Object"] = diesler::builtin::object::init(scope);
+  var object = scope["Object"].as<DSLClass>;
+  var method = new DSLClass(scope, object, "Method");
+  scope["Method"] = object;
+  scope["String"] = diesler::builtin::string::init(scope);
+  scope["Int"] = diesler::builtin::int::init(scope);
+  scope["Bool"] = diesler::builtin::bool::init(scope);
 }
 
-
-class diesler::Env {
+class diesler::Scope {
+  Scope parent = null;
   DSLObject self = null;
   Map<String, DSLObject> variables = new Map<String, DSLObject>();
   DSLObject returnValue = null;
 
-  new(DSLObject self) {
+  new(Scope parent, DSLObject self) {
+    this.parent = parent;
     this.self = self;
   }
 
-  DSLObject lookupVar(String var) {
+  DSLObject get(String var) {
     if(var == "self") {
       return self;
     } else if(variables.contains(var)) {
       return variables[var];
-    } else if(rootNamespace.contains(var)) {
-      return rootNamespace[var];
+    } else if(parent != null) {
+      return parent.get(var);
     } else {
-      throw new Exception("Variable undefined: " + var);
+      return null;
     }
+  }
+
+  void set(String var, DSLObject value) {
+    variables[var] = value;
   }
 
   DSLObject evalBlock(Term stats) {
@@ -68,15 +73,15 @@ class diesler::Env {
 
   DSLObject evalExp(Term exp) {
     if(exp instanceof IdnTerm) {
-      return lookupVar(exp.as<IdnTerm>.idn);
+      return get(exp.as<IdnTerm>.idn);
     } else if(exp instanceof StringTerm) {
-      return new DSLString(exp.as<StringTerm>.value);
+      return new DSLString(this, exp.as<StringTerm>.value);
     } else if(exp instanceof IntTerm) {
-      return new DSLInt(exp.as<IntTerm>.value);
+      return new DSLInt(this, exp.as<IntTerm>.value);
     } else if(exp instanceof BoolTerm) {
-      return new DSLBool(exp.as<BoolTerm>.value);
+      return new DSLBool(this, exp.as<BoolTerm>.value);
     } else if(exp instanceof BlockTerm) {
-      var m = new DSLMethod("noname", new Array<String>(), exp.as<BlockTerm>);
+      var m = new DSLMethod(this, "noname", new Array<String>(), exp.as<BlockTerm>);
       m.closure = this;
       return m;
     } else if(exp instanceof MessageSendTerm) {
@@ -94,16 +99,16 @@ class diesler::Env {
       if(method == null) {
         throw new NoSuchMethodException(ms.selector);
       }
-      return method.invoke(o, args);
+      return method.invoke(this, o, args);
     } else {
       throw new Exception("Unsupported expression: " + exp.as<String>);
     }
   }
 
-  Env lightClone(DSLObject self) {
-    var e = new Env(self);
-    e.variables = variables;
-    e.returnValue = returnValue;
-    return e;
+  Scope createLightSubScope(DSLObject self) {
+    var scope = new Scope(this, self);
+    scope.variables = variables;
+    scope.returnValue = returnValue;
+    return scope;
   }
 }
