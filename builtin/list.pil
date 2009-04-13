@@ -4,14 +4,14 @@ import diesler
 import diesler::exception
 
 class diesler::DSLList extends DSLObject {
-  List<DSLObject> value = null;
+  List<DSLObject> items = null;
 
-  new(Scope scope, List<DSLObject> value) extends super(scope["List"].as<DSLClass>) {
-    this.value = value;
+  new(Scope scope, List<DSLObject> items) extends super(scope["List"].as<DSLClass>) {
+    this.items = items;
   }
 
   as<String> {
-    return value.as<String>;
+    return items.as<String>;
   }
 }
 
@@ -33,7 +33,7 @@ class diesler::builtin::list::AddMethod extends DSLMethod {
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
     var l = o.as<DSLList>;
-    l.value.add(args[0]);
+    l.items.add(args[0]);
     return o;
   }
 }
@@ -44,7 +44,7 @@ class diesler::builtin::list::RemoveMethod extends DSLMethod {
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
     var l = o.as<DSLList>;
-    l.value.remove(args[0]);
+    l.items.remove(args[0]);
     return o;
   }
 }
@@ -55,7 +55,7 @@ class diesler::builtin::list::ContainsMethod extends DSLMethod {
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
     var l = o.as<DSLList>;
-    return new DSLBool(scope, l.value.contains(args[0]));
+    return new DSLBool(scope, l.items.contains(args[0]));
   }
 }
 
@@ -65,7 +65,7 @@ class diesler::builtin::list::GetMethod extends DSLMethod {
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
     var l = o.as<DSLList>;
-    return l.value[args[0].as<DSLInt>.value];
+    return l.items[args[0].as<DSLInt>.value];
   }
 }
 
@@ -75,7 +75,7 @@ class diesler::builtin::list::LengthMethod extends DSLMethod {
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
     var l = o.as<DSLList>;
-    return new DSLInt(scope, l.value.length);
+    return new DSLInt(scope, l.items.length);
   }
 }
 
@@ -86,6 +86,6 @@ class diesler::builtin::list::EqualsMethod extends DSLMethod {
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
     var l = o.as<DSLList>;
     var l2 = args[0].as<DSLList>;
-    return new DSLBool(scope, l.value == l2.value);
+    return new DSLBool(scope, l.items == l2.items);
   }
 }

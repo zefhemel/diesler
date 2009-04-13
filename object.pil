@@ -57,10 +57,12 @@ class diesler::DSLObject {
   as<String> {
     var s = new MutableString();
     s.append("I'm an object of type " + cls.name + " I contain the following fields: ");
+    /*
     for(String field : fields.keys) {
       s.append(field);
       s.append(' ');
     }
+    */
     return s.as<String>;
   }
 }

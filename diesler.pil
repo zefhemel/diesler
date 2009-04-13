@@ -17,7 +17,7 @@ void main(Array<String> args) {
     file.close();
     var parsed = new Parser(rootScope, content).acceptStatements();
     //new Scope(new DSLObject(diesler::rootNamespace["Object"])).evalBlock(parsed);
-    rootScope.evalBlock(parsed);
+    new Scope(rootScope, new DSLObject(rootScope["Object"].as<DSLClass>)).evalBlock(parsed);
   } else {
     println("Welcome to diesler, type :q to quit.");
     while(input != ":q") {

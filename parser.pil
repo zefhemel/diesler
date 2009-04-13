@@ -34,23 +34,13 @@ class diesler::Parser {
 
   Term acceptFactor() {
     var oldI = i;
-    var in = acceptInt();
-    if(in != -1) {
-      return new IntTerm(scope, in);
+    var lit = acceptLiteral();
+    if(lit != null) {
+      return lit;
     }
-    var v = acceptIdn();
-    if(v != null) {
-      if(v == "true") {
-        return new BoolTerm(scope, true);
-      } else if(v == "false") {
-        return new BoolTerm(scope, false);
-      } else {
-        return new IdnTerm(scope, v);
-      }
-    }
-    var s = acceptString();
-    if(s != null) {
-      return new StringTerm(scope, s);
+    var idn = acceptIdn();
+    if(idn != null) {
+      return new IdnTerm(scope, idn);
     }
     if(accept('(')) {
       acceptWhiteSpace();
@@ -66,6 +56,29 @@ class diesler::Parser {
     var dgr = acceptDeclBlock();
     if(dgr != null) {
       return dgr;
+    }
+    return null;
+  }
+
+  Term acceptLiteral() {
+    var in = acceptInt();
+    if(in != -1) {
+      return new IntTerm(scope, in);
+    }
+    var oldI = i;
+    var v = acceptIdn();
+    if(v != null) {
+      if(v == "true") {
+        return new BoolTerm(scope, true);
+      } else if(v == "false") {
+        return new BoolTerm(scope, false);
+      } else {
+        i = oldI;
+      }
+    }
+    var s = acceptString();
+    if(s != null) {
+      return new StringTerm(scope, s);
     }
     return null;
   }
@@ -283,7 +296,7 @@ class diesler::Parser {
 
   Term acceptAssign() {
     var oldI = i;
-    var t = acceptFactor();
+    var t = acceptPattern();
     acceptWhiteSpace();
     if(accept('=') && !accept('=')) {
       acceptWhiteSpace();
@@ -297,6 +310,37 @@ class diesler::Parser {
       i = oldI;
       return null;
     }
+  }
+
+  MatchTerm acceptPattern() {
+    var oldI = i;
+    String idn = acceptIdn();
+    if(idn != null) {
+      return new IdnMatchTerm(scope, idn);
+    }
+    Term literal = acceptLiteral();
+    if(literal != null) {
+      return new LiteralMatchTerm(scope, literal);
+    }
+    if(accept('(')) {
+      acceptWhiteSpace();
+      var l = new List<MatchTerm>();
+      while(true) {
+        var mt = acceptPattern();
+        if(mt == null) {
+          i = oldI;
+          return null;
+        }
+        l.add(mt);
+        acceptWhiteSpace();
+        if(accept(')')) {
+          return new ListMatchTerm(scope, l.as<Array<MatchTerm>>);
+        }
+        expect(',');
+        acceptWhiteSpace();
+      }
+    }
+    return null;
   }
 
   Term acceptStatement() {

@@ -1,4 +1,5 @@
 import "object.pil"
+import "builtin/list.pil"
 
 import diesler
 import diesler::util
@@ -121,10 +122,10 @@ class diesler::MethodSignature extends diesler::Term {
 }
 
 class diesler::AssignTerm extends diesler::Term {
-  Term lhs = null;
+  MatchTerm lhs = null;
   Term value = null;
 
-  new(Scope scope, Term lhs, Term value) extends super(scope["ASTAssignment"]) {
+  new(Scope scope, MatchTerm lhs, Term value) extends super(scope["ASTAssignment"]) {
     this.lhs = lhs;
     this.value = value;
   }
@@ -232,3 +233,73 @@ class diesler::IdnTerm extends diesler::Term {
   }
 }
 
+class diesler::MatchTerm extends diesler::Term {
+  new(DSLObject cls) extends super(cls) {
+  }
+
+  Bool match(Scope scope, DSLObject other) {
+    return false;
+  }
+}
+
+class diesler::IdnMatchTerm extends diesler::MatchTerm {
+  String idn = null;
+
+  new(Scope scope, String idn) extends super(scope["ASTIdentifierMatch"]) {
+    this.idn = idn;
+  }
+
+  Bool match(Scope scope, DSLObject other) {
+    scope[idn] = other;
+    return true;
+  }
+
+  as<String> {
+    return idn;
+  }
+}
+
+class diesler::ListMatchTerm extends diesler::MatchTerm {
+  Array<MatchTerm> items = null;
+
+  new(Scope scope, Array<MatchTerm> items) extends super(scope["ASTListMatch"]) {
+    this.items = items;
+  }
+
+  Bool match(Scope scope, DSLObject other) {
+    if(!(other instanceof DSLList)) {
+      return false;
+    }
+    var l = other.as<DSLList>;
+    if(l.items.length != items.length) {
+      return false;
+    }
+    for(Int i = 0; i < items.length; i++) {
+      if(!items[i].match(scope, l.items[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  as<String> {
+    return items.as<String>;
+  }
+}
+
+class diesler::LiteralMatchTerm extends diesler::MatchTerm {
+  Term value = null;
+
+  new(Scope scope, Term value) extends super(scope["ASTLiteralMatch"]) {
+    this.value = value;
+  }
+
+  Bool match(Scope scope, DSLObject other) {
+    var literalValue = scope.evalExp(value);
+    return literalValue == other;
+  }
+
+  as<String> {
+    return value.as<String>;
+  }
+}

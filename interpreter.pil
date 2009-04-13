@@ -10,9 +10,6 @@ import "builtin/native.pil"
 import diesler
 import diesler::exception
 
-//Map<String, DSLClass> diesler::rootNamespace = new Map<String, DSLClass>();
-
-
 void diesler::initInterpreter(Scope scope) {
   scope["Object"] = diesler::builtin::object::init(scope);
   var object = scope["Object"].as<DSLClass>;
@@ -66,8 +63,10 @@ class diesler::Scope {
   DSLObject evalStatement(Term stat) {
     if(stat instanceof AssignTerm) {
       var assign = stat.as<AssignTerm>;
-      variables[assign.lhs.as<IdnTerm>.idn] = evalExp(assign.value);
-      return null;
+      if(!assign.lhs.match(this, evalExp(assign.value))) {
+        throw new Exception("Match failed!");
+      }
+      return assign.value;
     } else {
       return evalExp(stat);
     }
