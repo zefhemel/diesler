@@ -1,2 +1,5 @@
 * Finish native Java import
-* Importing of other files
+* Object creation similar to object pattern match syntax: User[ name = "Zef Hemel", age = 25 ]
+* Clean up AST
+* Make AST classes accessible from within the language
+* Improve parser
