@@ -1,4 +1,6 @@
 import "object.pil"
+import "io.pil"
+import "parser.pil"
 
 import diesler
 import diesler::exception
@@ -12,6 +14,7 @@ DSLClass diesler::builtin::object::init(Scope scope) {
   object.methods["subClass:withMethods:"] = new diesler::builtin::object::SubclassMethod(scope);
   object.methods["importNativeClass:"] = new diesler::builtin::native::NewNativeClassMethod(scope);
   object.instanceMethods["isA:"] = new diesler::builtin::object::IsAMethod(scope);
+  object.instanceMethods["import:"] = new diesler::builtin::object::ImportMethod(scope);
 
   object.instanceMethods["=="] = new diesler::builtin::object::EqMethod(scope);
   object.instanceMethods["!="] = new diesler::builtin::object::NotEqMethod(scope);
@@ -226,5 +229,18 @@ class diesler::builtin::object::MatchAgainstMethod extends DSLMethod {
       }
     }
     return o;
+  }
+}
+
+class diesler::builtin::object::ImportMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "import:", new Array<String>("filename"), null) {
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    var file = new pil::io::ReadFile(args[0].as<DSLString>.value);
+    var content = file.readAll();
+    file.close();
+    BlockTerm block = new Parser(scope, content).acceptStatements();
+    return scope.evalBlock(block);
   }
 }

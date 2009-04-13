@@ -1,3 +1,10 @@
+import: "stdlib.dsl"
+
+log = Logger new
+log debug: "Testing"
+log level: 2
+log debug: "Testing 2"
+
 o = Object new
 o set: "name" to: "Zef Hemel"
 o set: "age" to: "25"
@@ -44,7 +51,7 @@ User = Object subClass: "User" withMethods: {
 
 zef = User new init
 print: (zef get: "name")
-if: [ (zef get: "name") == "unkown" ] then: {
+if: [ (zef get: "name") == "unknown" ] then: {
   print: "Default value still!"
 } else: {
   print: "value has been changed!"

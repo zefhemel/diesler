@@ -74,7 +74,12 @@ class diesler::Scope {
 
   DSLObject evalExp(Term exp) {
     if(exp instanceof IdnTerm) {
-      return get(exp.as<IdnTerm>.idn);
+      var value = get(exp.as<IdnTerm>.idn);
+      if(value == null) {
+        throw new DieslerException("Unknown: " + exp.as<IdnTerm>.idn);
+      } else {
+        return value;
+      }
     } else if(exp instanceof StringTerm) {
       return new DSLString(this, exp.as<StringTerm>.value);
     } else if(exp instanceof IntTerm) {

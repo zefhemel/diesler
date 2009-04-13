@@ -16,9 +16,9 @@ public class DSLNativeObject extends DSLObject {
 
 	@Override
 	public DSLMethod getMethod(String selector) {
-		try {
-			return super.getMethod(selector);
-		} catch(NoSuchMethodException ex) {
+	    if(super.getMethod(selector) != null) {
+	        return super.getMethod(selector);
+		} else {
 			Class<Object> cls = (Class<Object>) obj.getClass();
 			for(Method m : cls.getMethods()) {
 				if(m.getParameterTypes().length == 0 && m.getName().equals(selector)) {

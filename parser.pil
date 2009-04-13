@@ -421,7 +421,10 @@ class diesler::Parser {
         if(accept(')')) {
           return new ListMatchTerm(scope, l.as<Array<MatchTerm>>);
         }
-        expect(',');
+        if(!accept(',')) {
+          i = oldI;
+          return null;
+        }
         acceptWhiteSpace();
       }
     }

@@ -8,6 +8,11 @@ class diesler::exception::NoSuchFieldException extends Exception {
   }
 }
 
+class diesler::exception::DieslerException extends Exception { 
+  new(String message) extends super(message) {
+  }
+}
+
 class diesler::exception::NoSuchMethodException extends Exception {
   new(String method) extends super(method) {
   }
@@ -36,7 +41,7 @@ class diesler::DSLObject {
       curCls = curCls.superClass;
     }
     if(curCls == null) {
-      throw new NoSuchMethodException(selector);
+      return null;
     } else {
       return curCls.instanceMethods[selector];
     }

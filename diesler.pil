@@ -20,11 +20,20 @@ void main(Array<String> args) {
     new Scope(rootScope, new DSLObject(rootScope["Object"].as<DSLClass>)).evalBlock(parsed);
   } else {
     println("Welcome to diesler, type :q to quit.");
+    var scope = new Scope(rootScope, new DSLObject(rootScope["Object"].as<DSLClass>));
     while(input != ":q") {
       print("> ");
       input = readln();
       if(input != ":q") {
-        println(new Parser(rootScope, input).acceptStatements().toIndentedString(0));
+        var block = new Parser(rootScope, input).acceptStatements();
+        if(block == null) {
+          println("Could not parse.");
+        }
+        try {
+          scope.evalBlock(block);
+        } catch(Exception e) {
+          println("Error: " + e.as<String>);
+        }
       }
     }
   }
