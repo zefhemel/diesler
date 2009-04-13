@@ -84,6 +84,20 @@ class diesler::BlockTerm extends diesler::Term {
   }
 }
 
+class diesler::PatternCaseTerm extends diesler::Term {
+  MatchTerm match = null;
+  BlockTerm block = null;
+
+  new(Scope scope, MatchTerm match, BlockTerm block) extends super(scope["ASTPatternCase"]) {
+    this.match = match;
+    this.block = block;
+  }
+
+  String toIndentedString(Int depth) {
+    return "A pattern case";
+  }
+}
+
 class diesler::MethodDefTerm extends diesler::Term {
   MethodSignature signature = null;
   Array<Term> statements = null;
@@ -234,10 +248,24 @@ class diesler::IdnTerm extends diesler::Term {
 }
 
 class diesler::MatchTerm extends diesler::Term {
+  Term condition = null;
+
   new(DSLObject cls) extends super(cls) {
   }
 
   Bool match(Scope scope, DSLObject other) {
+    return false;
+  }
+}
+
+Bool diesler::checkMatch(Scope scope, Term condition, DSLObject object) {
+  if(condition == null) {
+    return true;
+  }
+  DSLObject result = scope.createLightSubScope(object).evalExp(condition);
+  if(result instanceof DSLBool) {
+    return result.as<DSLBool>.value;
+  } else {
     return false;
   }
 }
@@ -251,7 +279,7 @@ class diesler::IdnMatchTerm extends diesler::MatchTerm {
 
   Bool match(Scope scope, DSLObject other) {
     scope[idn] = other;
-    return true;
+    return checkMatch(scope, condition, other);
   }
 
   as<String> {
@@ -279,7 +307,7 @@ class diesler::ListMatchTerm extends diesler::MatchTerm {
         return false;
       }
     }
-    return true;
+    return checkMatch(scope, condition, other);
   }
 
   as<String> {
@@ -296,7 +324,11 @@ class diesler::LiteralMatchTerm extends diesler::MatchTerm {
 
   Bool match(Scope scope, DSLObject other) {
     var literalValue = scope.evalExp(value);
-    return literalValue == other;
+    if(literalValue == other) {
+      return checkMatch(scope, condition, other);
+    } else {
+      return false;
+    }
   }
 
   as<String> {

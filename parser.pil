@@ -57,6 +57,10 @@ class diesler::Parser {
     if(dgr != null) {
       return dgr;
     }
+    var mb = acceptMatchBlock();
+    if(mb != null) {
+      return mb;
+    }
     return null;
   }
 
@@ -122,7 +126,7 @@ class diesler::Parser {
         } else {
           sig = acceptKeywordMethodSignature();
           if(sig == null) {
-            oldI = i;
+            i = oldI;
             return null;
           }
         } 
@@ -136,6 +140,36 @@ class diesler::Parser {
         acceptAnyWhiteSpace();
       }
       return new BlockTerm(scope, decls.as<Array<Term>>);
+    }
+    return null;
+  }
+
+  Term acceptMatchBlock() {
+    var oldI = i;
+    if(accept('{')) {
+      acceptAnyWhiteSpace();
+      var cases = new List<Term>();
+      while(!accept('}')) {
+        MatchTerm match = acceptPatternWithCondition();
+        if(match != null) {
+          acceptWhiteSpace();
+          if(accept(':')) {
+            acceptWhiteSpace();
+            BlockTerm block = acceptBlock();
+            if(block != null) {
+              cases.add(new PatternCaseTerm(scope, match, block));
+            }
+          } else {
+            i = oldI;
+            return null;
+          }
+        } else {
+          i = oldI;
+          return null;
+        } 
+        acceptAnyWhiteSpace();
+      }
+      return new BlockTerm(scope, cases.as<Array<Term>>);
     }
     return null;
   }
@@ -296,7 +330,7 @@ class diesler::Parser {
 
   Term acceptAssign() {
     var oldI = i;
-    var t = acceptPattern();
+    var t = acceptPatternWithCondition();
     acceptWhiteSpace();
     if(accept('=') && !accept('=')) {
       acceptWhiteSpace();
@@ -326,7 +360,7 @@ class diesler::Parser {
       acceptWhiteSpace();
       var l = new List<MatchTerm>();
       while(true) {
-        var mt = acceptPattern();
+        var mt = acceptPatternWithCondition();
         if(mt == null) {
           i = oldI;
           return null;
@@ -341,6 +375,22 @@ class diesler::Parser {
       }
     }
     return null;
+  }
+
+  MatchTerm acceptPatternWithCondition() {
+    var p = acceptPattern();
+    if(p != null) {
+      acceptWhiteSpace();
+      if(accept('(')) {
+        Term condition = acceptStatement();
+        p.condition = condition;
+        expect(')');
+        acceptWhiteSpace();
+      }
+      return p;
+    } else {
+      return null;
+    }
   }
 
   Term acceptStatement() {

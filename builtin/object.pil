@@ -25,6 +25,7 @@ DSLClass diesler::builtin::object::init(Scope scope) {
   object.instanceMethods["if:then:"] = new diesler::builtin::object::IfThenMethod(scope);
   object.instanceMethods["if:then:else:"] = new diesler::builtin::object::IfThenElseMethod(scope);
   object.instanceMethods["while:do:"] = new diesler::builtin::object::WhileMethod(scope);
+  object.instanceMethods["match:against:"] = new diesler::builtin::object::MatchAgainstMethod(scope);
   return object;
 }
 
@@ -210,6 +211,23 @@ class diesler::builtin::object::WhileMethod extends DSLMethod {
     while(value.as<DSLBool>.value) {
       block.invoke(scope, o, new Array<DSLObject>());
       value = cond.invoke(scope, o, new Array<DSLObject>());
+    }
+    return o;
+  }
+}
+
+class diesler::builtin::object::MatchAgainstMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "match:against:", new Array<String>("expression", "patternblock"), null) {
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    var expr = args[0];
+    for(PatternCaseTerm ptt : args[1].as<DSLMethod>.block.statements) {
+      Scope matchScope = new Scope(scope, o);
+      if(ptt.match.match(matchScope, expr)) {
+        matchScope.evalBlock(ptt.block);
+        return o;
+      }
     }
     return o;
   }
