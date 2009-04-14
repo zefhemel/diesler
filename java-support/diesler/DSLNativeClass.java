@@ -11,4 +11,8 @@ public class DSLNativeClass extends DSLClass {
 	public Class<Object> getWrappedClass() {
 		return wrappedClass;
 	}
+	
+	public String toString() {
+	    return "Java class: " + wrappedClass.getName();
+	}
 }

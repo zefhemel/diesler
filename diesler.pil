@@ -30,7 +30,10 @@ void main(Array<String> args) {
           println("Could not parse.");
         }
         try {
-          scope.evalBlock(block);
+          var result = scope.evalBlock(block);
+          if(result != null) {
+            println(result.as<String>);
+          }
         } catch(Exception e) {
           println("Error: " + e.as<String>);
         }

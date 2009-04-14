@@ -71,15 +71,11 @@ class diesler::DSLObject {
   }
 
   as<String> {
-    var s = new MutableString();
-    s.append("I'm an object of type " + cls.name + " I contain the following fields: ");
-    /*
-    for(String field : fields.keys) {
-      s.append(field);
-      s.append(' ');
+    if(cls != null) {
+      return "Object of type " + cls.name;
+    } else {
+      return "Object of unkown type";
     }
-    */
-    return s.as<String>;
   }
 }
 
@@ -102,6 +98,14 @@ class diesler::DSLClass extends DSLObject {
       throw new NoSuchMethodException(selector);
     } else {
       return curCls.methods[selector];
+    }
+  }
+
+  as<String> {
+    if(superClass != null) {
+      return "Class " + name + ", a subclass of " + superClass.name;
+    } else {
+      return "Class " + name;
     }
   }
 }
@@ -144,6 +148,10 @@ class diesler::DSLMethod extends DSLObject {
     } else {
       return rv;
     }
+  }
+
+  as<String> {
+    return "Method " + selector;
   }
 }
 

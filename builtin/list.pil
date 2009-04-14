@@ -11,7 +11,15 @@ class diesler::DSLList extends DSLObject {
   }
 
   as<String> {
-    return items.as<String>;
+    var s = new MutableString("(");
+    for(Int i = 0; i < items.length; i++) {
+      s.append(items[i].as<String>);
+      if(i < items.length-1) {
+        s.append(", ");
+      }
+    }
+    s.append(')');
+    return s.as<String>;
   }
 }
 

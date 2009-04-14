@@ -29,7 +29,7 @@ public class NewNativeClassMethod extends DSLMethod {
 			}
 			return cls;
 		} catch (ClassNotFoundException e) {
-			return null;
+			throw new RuntimeException(e);
 		}
 	}
 }

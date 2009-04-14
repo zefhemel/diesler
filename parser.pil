@@ -470,7 +470,7 @@ class diesler::Parser {
   BlockTerm acceptStatements() {
     acceptWhiteSpace();
     var stats = new List<Term>();
-    while(i < text.length-1) {
+    while(i < text.length) {
       var exp = acceptStatement();
       stats.add(exp);
       acceptWhiteSpace();

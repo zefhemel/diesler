@@ -66,7 +66,7 @@ class diesler::Scope {
       if(!assign.lhs.match(this, evalExp(assign.value))) {
         throw new Exception("Match failed!");
       }
-      return assign.value;
+      return null;
     } else {
       return evalExp(stat);
     }
