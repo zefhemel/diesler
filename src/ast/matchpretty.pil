@@ -1,0 +1,44 @@
+import "utils.pil"
+import diesler::util
+
+@extend
+class diesler::ASTIdnMatch extends diesler::ASTMatch {
+  String toIndentedString(Int depth) {
+    return idn;
+  }
+}
+
+@extend
+class diesler::ASTFieldNameMatch extends diesler::ASTMatch {
+  String toIndentedString(Int depth) {
+    return fieldName;
+  }
+}
+
+@extend
+class diesler::ASTListMatch extends diesler::ASTMatch {
+  String toIndentedString(Int depth) {
+    return items.as<String>;
+  }
+}
+
+@extend
+class diesler::ASTObjectMatch extends diesler::ASTMatch {
+  String toIndentedString(Int depth) {
+    return properties.as<String>;
+  }
+}
+
+@extend
+class diesler::ASTPropertyMatch extends diesler::ASTMatch {
+  String toIndentedString(Int depth) {
+    return property;
+  }
+}
+
+@extend
+class diesler::ASTLiteralMatch extends diesler::ASTMatch {
+  String toIndentedString(Int depth) {
+    return value.as<String>;
+  }
+}
