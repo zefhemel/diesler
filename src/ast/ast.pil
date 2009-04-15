@@ -1,14 +1,22 @@
-import "object.pil"
+import "interpreter.pil"
 import "builtin/list.pil"
 import "ast/match.pil"
 
 import diesler
 import diesler::util
 
+include "eval.pil"
 include "ast/astpretty.pil"
 
 class diesler::ASTNode extends DSLObject {
   new(DSLObject instanceOf) extends super(instanceOf.as<DSLClass>) {
+  }
+  DSLObject eval(Scope scope) {
+    throw new Exception("Not yet implemented!");
+  }
+
+  DSLObject evalExp(Scope scope) {
+    return eval(scope);
   }
 }
 

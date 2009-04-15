@@ -9,7 +9,7 @@ Bool diesler::checkMatch(Scope scope, ASTNode condition, DSLObject object) {
   if(condition == null) {
     return true;
   }
-  DSLObject result = scope.createLightSubScope(object).evalExp(condition);
+  DSLObject result = condition.eval(scope.createLightSubScope(object));
   if(result instanceof DSLBool) {
     return result.as<DSLBool>.value;
   } else {
@@ -128,7 +128,7 @@ class diesler::ASTLiteralMatch extends diesler::ASTMatch {
   }
 
   Bool match(Scope scope, DSLObject other) {
-    var literalValue = scope.evalExp(value);
+    var literalValue = value.eval(scope);
     if(literalValue == other) {
       return checkMatch(scope, condition, other);
     } else {

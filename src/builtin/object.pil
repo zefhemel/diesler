@@ -162,7 +162,6 @@ class diesler::builtin::object::SubclassMethod extends DSLMethod {
       var newMethod = new DSLMethod(scope, mdt.signature.selector, mdt.signature.arguments, new ASTBlock(scope, mdt.statements));
       cls.instanceMethods[mdt.signature.selector] = newMethod;
     }
-    //scope[className] = cls;
     return cls;
   }
 }
@@ -267,7 +266,7 @@ class diesler::builtin::object::MatchAgainstMethod extends DSLMethod {
     for(ASTPatternCase ptt : args[1].as<DSLMethod>.block.statements) {
       Scope matchScope = new Scope(scope, o);
       if(ptt.match.match(matchScope, expr)) {
-        matchScope.evalBlock(ptt.block);
+        ptt.block.eval(matchScope);
         return o;
       }
     }
@@ -284,6 +283,6 @@ class diesler::builtin::object::ImportMethod extends DSLMethod {
     var content = file.readAll();
     file.close();
     ASTBlock block = new Parser(scope, content).acceptStatements();
-    return scope.evalBlock(block);
+    return block.eval(scope);
   }
 }

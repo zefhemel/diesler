@@ -1,4 +1,5 @@
 import "interpreter.pil"
+import "ast/ast.pil"
 
 import diesler
 import diesler::exception
@@ -142,7 +143,7 @@ class diesler::DSLMethod extends DSLObject {
       }
       //localScope.variables[argumentNames[i]] = args[i];
     }
-    DSLObject rv = localScope.evalBlock(block);
+    DSLObject rv = block.eval(localScope);
     if(localScope.returnValue != null) {
       return localScope.returnValue;
     } else {

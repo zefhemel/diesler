@@ -1,0 +1,114 @@
+// Important: do not import directly!
+
+import "object.pil"
+import "builtin/object.pil"
+import "builtin/string.pil"
+import "builtin/int.pil"
+import "builtin/list.pil"
+import "builtin/bool.pil"
+import "builtin/native.pil"
+
+import diesler::exception
+
+@extend
+class diesler::ASTNode extends DSLObject {
+}
+
+@extend
+class diesler::ASTMessageSend extends diesler::ASTNode {
+  DSLObject eval(Scope scope) {
+    var o = object.eval(scope);
+    var args = new Array<DSLObject>(arguments.length);
+    for(Int i = 0; i < arguments.length; i++) {
+      args[i] = arguments[i].evalExp(scope);
+    }
+    if(selector == "return:") {
+      scope.returnValue = args[0];
+      return scope.returnValue;
+    }
+    DSLMethod method = o.getMethod(selector);
+    if(method == null) {
+      throw new NoSuchMethodException(selector);
+    }
+    return method.invoke(scope, o, args);
+  }
+}
+
+@extend
+class diesler::ASTBlock extends diesler::ASTNode {
+
+  DSLObject evalExp(Scope scope) {
+    var m = new DSLMethod(scope, "noname", new Array<ASTMatch>(), this);
+    m.closure = scope;
+    return m;
+  }
+
+  DSLObject eval(Scope scope) {
+    DSLObject lastValue = null;
+    for(ASTNode t : statements) {
+      lastValue = t.eval(scope);
+    }
+    return lastValue;
+  }
+}
+
+@extend
+class diesler::ASTAssign extends diesler::ASTNode {
+  DSLObject eval(Scope scope) {
+    if(!lhs.match(scope, value.eval(scope))) {
+      throw new Exception("Match failed!");
+    }
+    return null;
+  }
+}
+
+@extend
+class diesler::ASTList extends diesler::ASTNode {
+  DSLObject eval(Scope scope) {
+    var l = new List<DSLObject>();
+    for(ASTNode t : values) {
+      l.add(t.eval(scope));
+    }
+    return new DSLList(scope, l);
+  }
+}
+
+@extend
+class diesler::ASTInt extends diesler::ASTNode {
+  DSLObject eval(Scope scope) {
+    return new DSLInt(scope, value);
+  }
+}
+
+@extend
+class diesler::ASTBool extends diesler::ASTNode {
+  DSLObject eval(Scope scope) {
+    return new DSLBool(scope, value);
+  }
+}
+
+@extend
+class diesler::ASTString extends diesler::ASTNode {
+  DSLObject eval(Scope scope) {
+    return new DSLString(scope, value);
+  }
+}
+
+@extend
+class diesler::ASTIdn extends diesler::ASTNode {
+  DSLObject eval(Scope scope) {
+    var value = scope.get(idn);
+    if(value == null) {
+      throw new DieslerException("Unknown: " + idn);
+    } else {
+      return value;
+    }
+  }
+}
+
+@extend
+class diesler::ASTFieldName extends diesler::ASTNode {
+  DSLObject eval(Scope scope) {
+    return scope.self.getField(fieldName);
+  }
+}

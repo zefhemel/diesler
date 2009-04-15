@@ -16,7 +16,7 @@ void main(Array<String> args) {
     file.close();
     var parsed = new Parser(rootScope, content).acceptStatements();
     //new Scope(new DSLObject(diesler::rootNamespace["Object"])).evalBlock(parsed);
-    new Scope(rootScope, new DSLObject(rootScope["Object"].as<DSLClass>)).evalBlock(parsed);
+    parsed.eval(new Scope(rootScope, new DSLObject(rootScope["Object"].as<DSLClass>)));
   } else {
     println("Welcome to diesler, type :q to quit.");
     var scope = new Scope(rootScope, new DSLObject(rootScope["Object"].as<DSLClass>));
@@ -29,7 +29,7 @@ void main(Array<String> args) {
           println("Could not parse.");
         }
         try {
-          var result = scope.evalBlock(block);
+          var result = block.eval(scope);
           if(result != null) {
             println(result.as<String>);
           }
