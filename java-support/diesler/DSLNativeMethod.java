@@ -8,7 +8,7 @@ import diesler.*;
 public class DSLNativeMethod extends DSLMethod {
 
 	public DSLNativeMethod(diesler.Scope scope, String selector) {
-		super(scope, selector, new  MatchTerm[] { new IdnMatchTerm(scope, "args") }, null);
+		super(scope, selector, new  ASTMatch[] { new ASTIdnMatch(scope, "args") }, null);
 	}
 
 	@Override

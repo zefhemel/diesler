@@ -48,10 +48,10 @@ class diesler::Scope {
     variables[var] = value;
   }
 
-  DSLObject evalBlock(Term stats) {
-    if(stats instanceof BlockTerm) {
+  DSLObject evalBlock(ASTNode stats) {
+    if(stats instanceof ASTBlock) {
       DSLObject lastValue = null;
-      for(Term t : stats.as<BlockTerm>.statements) {
+      for(ASTNode t : stats.as<ASTBlock>.statements) {
         lastValue = evalStatement(t);
       }
       return lastValue;
@@ -60,9 +60,9 @@ class diesler::Scope {
     }
   }
 
-  DSLObject evalStatement(Term stat) {
-    if(stat instanceof AssignTerm) {
-      var assign = stat.as<AssignTerm>;
+  DSLObject evalStatement(ASTNode stat) {
+    if(stat instanceof ASTAssign) {
+      var assign = stat.as<ASTAssign>;
       if(!assign.lhs.match(this, evalExp(assign.value))) {
         throw new Exception("Match failed!");
       }
@@ -72,34 +72,34 @@ class diesler::Scope {
     }
   }
 
-  DSLObject evalExp(Term exp) {
-    if(exp instanceof IdnTerm) {
-      var value = get(exp.as<IdnTerm>.idn);
+  DSLObject evalExp(ASTNode exp) {
+    if(exp instanceof ASTIdn) {
+      var value = get(exp.as<ASTIdn>.idn);
       if(value == null) {
-        throw new DieslerException("Unknown: " + exp.as<IdnTerm>.idn);
+        throw new DieslerException("Unknown: " + exp.as<ASTIdn>.idn);
       } else {
         return value;
       }
-    } else if(exp instanceof StringTerm) {
-      return new DSLString(this, exp.as<StringTerm>.value);
-    } else if(exp instanceof IntTerm) {
-      return new DSLInt(this, exp.as<IntTerm>.value);
-    } else if(exp instanceof BoolTerm) {
-      return new DSLBool(this, exp.as<BoolTerm>.value);
-    } else if(exp instanceof FieldNameTerm) {
-      return self.getField(exp.as<FieldNameTerm>.fieldName);
-    } else if(exp instanceof ListTerm) {
+    } else if(exp instanceof ASTString) {
+      return new DSLString(this, exp.as<ASTString>.value);
+    } else if(exp instanceof ASTInt) {
+      return new DSLInt(this, exp.as<ASTInt>.value);
+    } else if(exp instanceof ASTBool) {
+      return new DSLBool(this, exp.as<ASTBool>.value);
+    } else if(exp instanceof ASTFieldName) {
+      return self.getField(exp.as<ASTFieldName>.fieldName);
+    } else if(exp instanceof ASTList) {
       var l = new List<DSLObject>();
-      for(Term t : exp.as<ListTerm>.values) {
+      for(ASTNode t : exp.as<ASTList>.values) {
         l.add(evalExp(t));
       }
       return new DSLList(this, l);
-    } else if(exp instanceof BlockTerm) {
-      var m = new DSLMethod(this, "noname", new Array<MatchTerm>(), exp.as<BlockTerm>);
+    } else if(exp instanceof ASTBlock) {
+      var m = new DSLMethod(this, "noname", new Array<ASTMatch>(), exp.as<ASTBlock>);
       m.closure = this;
       return m;
-    } else if(exp instanceof MessageSendTerm) {
-      var ms = exp.as<MessageSendTerm>;
+    } else if(exp instanceof ASTMessageSend) {
+      var ms = exp.as<ASTMessageSend>;
       var o = evalExp(ms.object);
       var args = new Array<DSLObject>(ms.arguments.length);
       for(Int i = 0; i < ms.arguments.length; i++) {

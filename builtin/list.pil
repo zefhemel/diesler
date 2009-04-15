@@ -36,7 +36,7 @@ DSLClass diesler::builtin::list::init(Scope scope) {
 }
 
 class diesler::builtin::list::AddMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "add:", new Array<MatchTerm>(new IdnMatchTerm(scope, "item")), null) {
+  new(Scope scope) extends super(scope, "add:", new Array<ASTMatch>(new ASTIdnMatch(scope, "item")), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
@@ -47,7 +47,7 @@ class diesler::builtin::list::AddMethod extends DSLMethod {
 }
 
 class diesler::builtin::list::RemoveMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "remove:", new Array<MatchTerm>(new IdnMatchTerm(scope, "item")), null) {
+  new(Scope scope) extends super(scope, "remove:", new Array<ASTMatch>(new ASTIdnMatch(scope, "item")), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
@@ -58,7 +58,7 @@ class diesler::builtin::list::RemoveMethod extends DSLMethod {
 }
 
 class diesler::builtin::list::ContainsMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "contains:", new Array<MatchTerm>(new IdnMatchTerm(scope, "item")), null) {
+  new(Scope scope) extends super(scope, "contains:", new Array<ASTMatch>(new ASTIdnMatch(scope, "item")), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
@@ -68,7 +68,7 @@ class diesler::builtin::list::ContainsMethod extends DSLMethod {
 }
 
 class diesler::builtin::list::GetMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "get:", new Array<MatchTerm>(new IdnMatchTerm(scope, "index")), null) {
+  new(Scope scope) extends super(scope, "get:", new Array<ASTMatch>(new ASTIdnMatch(scope, "index")), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
@@ -78,7 +78,7 @@ class diesler::builtin::list::GetMethod extends DSLMethod {
 }
 
 class diesler::builtin::list::LengthMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "length", new Array<MatchTerm>(), null) {
+  new(Scope scope) extends super(scope, "length", new Array<ASTMatch>(), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
@@ -88,7 +88,7 @@ class diesler::builtin::list::LengthMethod extends DSLMethod {
 }
 
 class diesler::builtin::list::EqualsMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "==", new Array<MatchTerm>(new IdnMatchTerm(scope, "other")), null) {
+  new(Scope scope) extends super(scope, "==", new Array<ASTMatch>(new ASTIdnMatch(scope, "other")), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {

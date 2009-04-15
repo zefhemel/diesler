@@ -33,7 +33,7 @@ DSLClass diesler::builtin::string::init(Scope scope) {
 }
 
 class diesler::builtin::string::StringConcatMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "+", new Array<MatchTerm>(new IdnMatchTerm(scope, "str")), null) {
+  new(Scope scope) extends super(scope, "+", new Array<ASTMatch>(new ASTIdnMatch(scope, "str")), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {

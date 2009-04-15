@@ -111,12 +111,12 @@ class diesler::DSLClass extends DSLObject {
 }
 
 class diesler::DSLMethod extends DSLObject {
-  Array<MatchTerm> argumentPatterns = null;
-  BlockTerm block = null;
+  Array<ASTMatch> argumentPatterns = null;
+  ASTBlock block = null;
   String selector = null;
   Scope closure = null;
 
-  new(Scope scope, String selector, Array<MatchTerm> argumentPatterns, BlockTerm block) extends super(scope["Method"].as<DSLClass>){
+  new(Scope scope, String selector, Array<ASTMatch> argumentPatterns, ASTBlock block) extends super(scope["Method"].as<DSLClass>){
     this.argumentPatterns = argumentPatterns;
     this.block = block;
     this.selector = selector;

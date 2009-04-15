@@ -12,7 +12,7 @@ String diesler::util::spaces(Int n) {
   return m.as<String>;
 }
 
-class diesler::Term extends DSLObject {
+class diesler::ASTNode extends DSLObject {
   new(DSLObject instanceOf) extends super(instanceOf.as<DSLClass>) {
   }
 
@@ -21,12 +21,12 @@ class diesler::Term extends DSLObject {
   }
 }
 
-class diesler::MessageSendTerm extends diesler::Term {
-  Term object = null;
+class diesler::ASTMessageSend extends diesler::ASTNode {
+  ASTNode object = null;
   String selector = null;
-  Array<Term> arguments = null;
+  Array<ASTNode> arguments = null;
 
-  new(Scope scope, Term object, String selector, Array<Term> arguments) extends super(scope["ASTMessageSend"]) {
+  new(Scope scope, ASTNode object, String selector, Array<ASTNode> arguments) extends super(scope["ASTMessageSend"]) {
     this.object = object;
     this.selector = selector;
     this.arguments = arguments;
@@ -42,8 +42,8 @@ class diesler::MessageSendTerm extends diesler::Term {
     }
     s.append(selector);
     var sawCons = false;
-    for(Term t: arguments) {
-      if(t instanceof MessageSendTerm) {
+    for(ASTNode t: arguments) {
+      if(t instanceof ASTMessageSend) {
         s.append("\n");
         sawCons = true;
       } else {
@@ -60,17 +60,17 @@ class diesler::MessageSendTerm extends diesler::Term {
   }
 }
 
-class diesler::BlockTerm extends diesler::Term {
-  Array<Term> statements = null;
+class diesler::ASTBlock extends diesler::ASTNode {
+  Array<ASTNode> statements = null;
 
-  new(Scope scope, Array<Term> statements) extends super(scope["ASTBlock"]) {
+  new(Scope scope, Array<ASTNode> statements) extends super(scope["ASTBlock"]) {
     this.statements = statements;
   }
 
   String toIndentedString(Int depth) {
     var s = new MutableString();
     s.append("[\n");
-    for(Term t : statements) {
+    for(ASTNode t : statements) {
       s.append(t.toIndentedString(depth+1));
       s.append('\n');
     }
@@ -84,11 +84,11 @@ class diesler::BlockTerm extends diesler::Term {
   }
 }
 
-class diesler::PatternCaseTerm extends diesler::Term {
-  MatchTerm match = null;
-  BlockTerm block = null;
+class diesler::ASTPatternCase extends diesler::ASTNode {
+  ASTMatch match = null;
+  ASTBlock block = null;
 
-  new(Scope scope, MatchTerm match, BlockTerm block) extends super(scope["ASTPatternCase"]) {
+  new(Scope scope, ASTMatch match, ASTBlock block) extends super(scope["ASTPatternCase"]) {
     this.match = match;
     this.block = block;
   }
@@ -98,11 +98,11 @@ class diesler::PatternCaseTerm extends diesler::Term {
   }
 }
 
-class diesler::MethodDefTerm extends diesler::Term {
-  MethodSignature signature = null;
-  Array<Term> statements = null;
+class diesler::ASTMethodDef extends diesler::ASTNode {
+  ASTMethodSignature signature = null;
+  Array<ASTNode> statements = null;
 
-  new(Scope scope, MethodSignature signature, Array<Term> statements) extends super(scope["ASTMethodDef"]) {
+  new(Scope scope, ASTMethodSignature signature, Array<ASTNode> statements) extends super(scope["ASTMethodDef"]) {
     this.signature = signature;
     this.statements = statements;
   }
@@ -111,7 +111,7 @@ class diesler::MethodDefTerm extends diesler::Term {
     var s = new MutableString();
     s.append(signature.as<String>);
     s.append(" [\n");
-    for(Term t : statements) {
+    for(ASTNode t : statements) {
       s.append(t.toIndentedString(depth+1));
       s.append('\n');
     }
@@ -125,21 +125,21 @@ class diesler::MethodDefTerm extends diesler::Term {
   }
 }
 
-class diesler::MethodSignature extends diesler::Term {
+class diesler::ASTMethodSignature extends diesler::ASTNode {
   String selector = null;
-  Array<MatchTerm> arguments = null;
+  Array<ASTMatch> arguments = null;
 
-  new(Scope scope, String selector, Array<MatchTerm> arguments) extends super(scope["ASTMethodSignature"]) {
+  new(Scope scope, String selector, Array<ASTMatch> arguments) extends super(scope["ASTMethodSignature"]) {
     this.selector = selector;
     this.arguments = arguments;
   }
 }
 
-class diesler::AssignTerm extends diesler::Term {
-  MatchTerm lhs = null;
-  Term value = null;
+class diesler::ASTAssign extends diesler::ASTNode {
+  ASTMatch lhs = null;
+  ASTNode value = null;
 
-  new(Scope scope, MatchTerm lhs, Term value) extends super(scope["ASTAssignment"]) {
+  new(Scope scope, ASTMatch lhs, ASTNode value) extends super(scope["ASTAssignment"]) {
     this.lhs = lhs;
     this.value = value;
   }
@@ -154,16 +154,16 @@ class diesler::AssignTerm extends diesler::Term {
   }
 }
 
-class diesler::ListTerm extends diesler::Term {
-  Array<Term> values = null;
+class diesler::ASTList extends diesler::ASTNode {
+  Array<ASTNode> values = null;
 
-  new(Scope scope, Array<Term> values) extends super(scope["ASTList"]) {
+  new(Scope scope, Array<ASTNode> values) extends super(scope["ASTList"]) {
     this.values = values;
   }
 
   String toIndentedString(Int depth) {
     var s = new MutableString();
-    for(Term value : values) {
+    for(ASTNode value : values) {
       s.append(value.as<String>);
       if(value != values[values.length-1]) {
         s.append(", ");
@@ -173,7 +173,7 @@ class diesler::ListTerm extends diesler::Term {
   }
 }
 
-class diesler::IntTerm extends diesler::Term {
+class diesler::ASTInt extends diesler::ASTNode {
   Int value = 0;
 
   new(Scope scope, Int value) extends super(scope["ASTInt"]) {
@@ -184,8 +184,8 @@ class diesler::IntTerm extends diesler::Term {
     if(o == null) {
       return false;
     }
-    if(o instanceof IntTerm) {
-      return o.as<IntTerm>.value == value;
+    if(o instanceof ASTInt) {
+      return o.as<ASTInt>.value == value;
     } else {
       return false;
     }
@@ -198,7 +198,7 @@ class diesler::IntTerm extends diesler::Term {
   }
 }
 
-class diesler::BoolTerm extends diesler::Term {
+class diesler::ASTBool extends diesler::ASTNode {
   Bool value = false;
 
   new(Scope scope, Bool value) extends super(scope["ASTBool"]) {
@@ -212,7 +212,7 @@ class diesler::BoolTerm extends diesler::Term {
   }
 }
 
-class diesler::StringTerm extends diesler::Term {
+class diesler::ASTString extends diesler::ASTNode {
   String value = null;
 
   new(Scope scope, String value) extends super(scope["ASTString"]) {
@@ -223,8 +223,8 @@ class diesler::StringTerm extends diesler::Term {
     if(o == null) {
       return false;
     }
-    if(o instanceof StringTerm) {
-      return o.as<StringTerm>.value == value;
+    if(o instanceof ASTString) {
+      return o.as<ASTString>.value == value;
     } else {
       return false;
     }
@@ -235,7 +235,7 @@ class diesler::StringTerm extends diesler::Term {
   }
 }
 
-class diesler::IdnTerm extends diesler::Term {
+class diesler::ASTIdn extends diesler::ASTNode {
   String idn = null;
 
   new(Scope scope, String idn) extends super(scope["ASTIdentifier"]) {
@@ -247,7 +247,7 @@ class diesler::IdnTerm extends diesler::Term {
   }
 }
 
-class diesler::FieldNameTerm extends diesler::Term {
+class diesler::ASTFieldName extends diesler::ASTNode {
   String fieldName = null;
 
   new(Scope scope, String fieldName) extends super(scope["ASTFieldName"]) {
@@ -259,8 +259,8 @@ class diesler::FieldNameTerm extends diesler::Term {
   }
 }
 
-class diesler::MatchTerm extends diesler::Term {
-  Term condition = null;
+class diesler::ASTMatch extends diesler::ASTNode {
+  ASTNode condition = null;
 
   new(DSLObject cls) extends super(cls) {
   }
@@ -270,7 +270,7 @@ class diesler::MatchTerm extends diesler::Term {
   }
 }
 
-Bool diesler::checkMatch(Scope scope, Term condition, DSLObject object) {
+Bool diesler::checkMatch(Scope scope, ASTNode condition, DSLObject object) {
   if(condition == null) {
     return true;
   }
@@ -282,7 +282,7 @@ Bool diesler::checkMatch(Scope scope, Term condition, DSLObject object) {
   }
 }
 
-class diesler::IdnMatchTerm extends diesler::MatchTerm {
+class diesler::ASTIdnMatch extends diesler::ASTMatch {
   String idn = null;
 
   new(Scope scope, String idn) extends super(scope["ASTIdentifierMatch"]) {
@@ -299,7 +299,7 @@ class diesler::IdnMatchTerm extends diesler::MatchTerm {
   }
 }
 
-class diesler::FieldNameMatchTerm extends diesler::MatchTerm {
+class diesler::ASTFieldNameMatch extends diesler::ASTMatch {
   String fieldName = null;
 
   new(Scope scope, String fieldName) extends super(scope["ASTIdentifierMatch"]) {
@@ -320,10 +320,10 @@ class diesler::FieldNameMatchTerm extends diesler::MatchTerm {
   }
 }
 
-class diesler::ListMatchTerm extends diesler::MatchTerm {
-  Array<MatchTerm> items = null;
+class diesler::ASTListMatch extends diesler::ASTMatch {
+  Array<ASTMatch> items = null;
 
-  new(Scope scope, Array<MatchTerm> items) extends super(scope["ASTListMatch"]) {
+  new(Scope scope, Array<ASTMatch> items) extends super(scope["ASTListMatch"]) {
     this.items = items;
   }
 
@@ -348,11 +348,11 @@ class diesler::ListMatchTerm extends diesler::MatchTerm {
   }
 }
 
-class diesler::ObjectMatchTerm extends diesler::MatchTerm {
+class diesler::ASTObjectMatch extends diesler::ASTMatch {
   String classString = null;
-  Array<PropertyMatchTerm> properties = null;
+  Array<ASTPropertyMatch> properties = null;
 
-  new(Scope scope, String classString, Array<PropertyMatchTerm> properties) extends super(scope["ASTObjectMatchTerm"]) {
+  new(Scope scope, String classString, Array<ASTPropertyMatch> properties) extends super(scope["ASTObjectMatch"]) {
     this.classString = classString;
     this.properties = properties;
   }
@@ -363,7 +363,7 @@ class diesler::ObjectMatchTerm extends diesler::MatchTerm {
     if(!other.isInstanceOf(klass)) {
       return false;
     }
-    for(PropertyMatchTerm pmt : properties) {
+    for(ASTPropertyMatch pmt : properties) {
       if(other.getMethod(pmt.property) == null) {
         return false;
       }
@@ -380,20 +380,20 @@ class diesler::ObjectMatchTerm extends diesler::MatchTerm {
   }
 }
 
-class diesler::PropertyMatchTerm extends diesler::MatchTerm {
+class diesler::ASTPropertyMatch extends diesler::ASTMatch {
   String property = null;
-  MatchTerm pattern = null;
+  ASTMatch pattern = null;
 
-  new(Scope scope, String property, MatchTerm pattern) extends super(scope["ASTPropertyMatch"]) {
+  new(Scope scope, String property, ASTMatch pattern) extends super(scope["ASTPropertyMatch"]) {
     this.property = property;
     this.pattern = pattern;
   }
 }
 
-class diesler::LiteralMatchTerm extends diesler::MatchTerm {
-  Term value = null;
+class diesler::ASTLiteralMatch extends diesler::ASTMatch {
+  ASTNode value = null;
 
-  new(Scope scope, Term value) extends super(scope["ASTLiteralMatch"]) {
+  new(Scope scope, ASTNode value) extends super(scope["ASTLiteralMatch"]) {
     this.value = value;
   }
 

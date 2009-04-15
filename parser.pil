@@ -32,7 +32,7 @@ class diesler::Parser {
     this.text = text;
   }
 
-  Term acceptFactor() {
+  ASTNode acceptFactor() {
     var oldI = i;
     var lit = acceptLiteral();
     if(lit != null) {
@@ -40,11 +40,11 @@ class diesler::Parser {
     }
     var idn = acceptIdn();
     if(idn != null) {
-      return new IdnTerm(scope, idn);
+      return new ASTIdn(scope, idn);
     }
     var fn = acceptFieldName();
     if(fn != null) {
-      return new FieldNameTerm(scope, fn);
+      return new ASTFieldName(scope, fn);
     }
     if(accept('(')) {
       acceptWhiteSpace();
@@ -71,35 +71,35 @@ class diesler::Parser {
     return null;
   }
 
-  Term acceptLiteral() {
+  ASTNode acceptLiteral() {
     var in = acceptInt();
     if(in != -1) {
-      return new IntTerm(scope, in);
+      return new ASTInt(scope, in);
     }
     var oldI = i;
     var v = acceptIdn();
     if(v != null) {
       if(v == "true") {
-        return new BoolTerm(scope, true);
+        return new ASTBool(scope, true);
       } else if(v == "false") {
-        return new BoolTerm(scope, false);
+        return new ASTBool(scope, false);
       } else {
         i = oldI;
       }
     }
     var s = acceptString();
     if(s != null) {
-      return new StringTerm(scope, s);
+      return new ASTString(scope, s);
     }
     return null;
   }
 
-  BlockTerm acceptBlock() {
+  ASTBlock acceptBlock() {
     var oldI = i;
     acceptWhiteSpace();
     if(accept('{') || accept('[')) {
       acceptAnyWhiteSpace();
-      var stats = new List<Term>();
+      var stats = new List<ASTNode>();
       while(!accept('}') && !accept(']')) {
         var stat = acceptStatement();
         if(stat == null) {
@@ -115,21 +115,21 @@ class diesler::Parser {
           acceptAnyWhiteSpace();
         }
       }
-      return new BlockTerm(scope, stats.as<Array<Term>>);
+      return new ASTBlock(scope, stats.as<Array<ASTNode>>);
     }
     return null;
   }
 
-  Term acceptDeclBlock() {
+  ASTNode acceptDeclBlock() {
     var oldI = i;
     if(accept('{')) {
       acceptAnyWhiteSpace();
-      var decls = new List<Term>();
+      var decls = new List<ASTNode>();
       while(!accept('}')) {
         String postfixMethodname = acceptIdnNoKeyword();
-        MethodSignature sig = null;
+        ASTMethodSignature sig = null;
         if(postfixMethodname != null) {
-          sig = new MethodSignature(scope, postfixMethodname, new Array<MatchTerm>());
+          sig = new ASTMethodSignature(scope, postfixMethodname, new Array<ASTMatch>());
         } else {
           sig = acceptKeywordMethodSignature();
           if(sig == null) {
@@ -143,28 +143,28 @@ class diesler::Parser {
           i = oldI;
           return null;
         }
-        decls.add(new MethodDefTerm(scope, sig, b.statements));
+        decls.add(new ASTMethodDef(scope, sig, b.statements));
         acceptAnyWhiteSpace();
       }
-      return new BlockTerm(scope, decls.as<Array<Term>>);
+      return new ASTBlock(scope, decls.as<Array<ASTNode>>);
     }
     return null;
   }
 
-  Term acceptMatchBlock() {
+  ASTNode acceptMatchBlock() {
     var oldI = i;
     if(accept('{')) {
       acceptAnyWhiteSpace();
-      var cases = new List<Term>();
+      var cases = new List<ASTNode>();
       while(!accept('}')) {
-        MatchTerm match = acceptPatternWithCondition();
+        ASTMatch match = acceptPatternWithCondition();
         if(match != null) {
           acceptWhiteSpace();
           if(accept(':')) {
             acceptWhiteSpace();
-            BlockTerm block = acceptBlock();
+            ASTBlock block = acceptBlock();
             if(block != null) {
-              cases.add(new PatternCaseTerm(scope, match, block));
+              cases.add(new ASTPatternCase(scope, match, block));
             }
           } else {
             i = oldI;
@@ -176,33 +176,33 @@ class diesler::Parser {
         } 
         acceptAnyWhiteSpace();
       }
-      return new BlockTerm(scope, cases.as<Array<Term>>);
+      return new ASTBlock(scope, cases.as<Array<ASTNode>>);
     }
     return null;
   }
 
-  MethodSignature acceptKeywordMethodSignature() {
+  ASTMethodSignature acceptKeywordMethodSignature() {
     var selector = new MutableString();
-    var args = new List<MatchTerm>();
+    var args = new List<ASTMatch>();
     acceptWhiteSpace();
     var kw = acceptKeyword();
     while(kw != null) {
       selector.append(kw);
       acceptWhiteSpace();
-      MatchTerm arg = acceptPatternWithCondition();
+      ASTMatch arg = acceptPatternWithCondition();
       args.add(arg);
       acceptWhiteSpace();
       kw = acceptKeyword();
     }
     if(args.length > 0) {
-      return new MethodSignature(scope, selector.as<String>, args.as<Array<MatchTerm>>);
+      return new ASTMethodSignature(scope, selector.as<String>, args.as<Array<ASTMatch>>);
     } else {
       return null;
     }
   }
 
-  Term acceptGeneric(Int level) {
-    Term f = null;
+  ASTNode acceptGeneric(Int level) {
+    ASTNode f = null;
     if(level == 0) {
       f = acceptFactor();
     } else {
@@ -217,13 +217,13 @@ class diesler::Parser {
     var op = acceptOps(operators[level]);
     acceptWhiteSpace();
     while(op != null) {
-      Term t2 = null;
+      ASTNode t2 = null;
       t2 = acceptGeneric(level);
       if(t2 == null) {
         printRest();
         throw new ParseException("Expected an expression.");
       }
-      t = new MessageSendTerm(scope, t, op, new Array<Term>(t2));
+      t = new ASTMessageSend(scope, t, op, new Array<ASTNode>(t2));
       oldI = i;
       op = acceptOps(operators[level]);
       acceptWhiteSpace();
@@ -232,13 +232,13 @@ class diesler::Parser {
     return t;
   }
 
-  Term acceptPostfix() {
+  ASTNode acceptPostfix() {
     var t = acceptGeneric(operators.length-1);
     var oldI = i;
     acceptWhiteSpace();
     var idn = acceptIdnNoKeyword();
     while(idn != null) {
-      t = new MessageSendTerm(scope, t, idn, new Array<Term>());
+      t = new ASTMessageSend(scope, t, idn, new Array<ASTNode>());
       oldI = i;
       acceptWhiteSpace();
       idn = acceptIdnNoKeyword();
@@ -247,14 +247,14 @@ class diesler::Parser {
     return t;
   }
 
-  Term acceptPostfixNoObject() {
-    Term t = null;
+  ASTNode acceptPostfixNoObject() {
+    ASTNode t = null;
     var oldI = i;
     acceptWhiteSpace();
     printRest();
     var idn = acceptIdnNoKeyword();
     while(idn != null) {
-      t = new MessageSendTerm(scope, t, idn, new Array<Term>());
+      t = new ASTMessageSend(scope, t, idn, new Array<ASTNode>());
       oldI = i;
       acceptWhiteSpace();
       printRest();
@@ -264,10 +264,10 @@ class diesler::Parser {
     return t;
   }
 
-  Term acceptMS() {
+  ASTNode acceptMS() {
     var t = acceptPostfix();
     var selector = new MutableString();
-    var args = new List<Term>();
+    var args = new List<ASTNode>();
     acceptWhiteSpace();
     var kw = acceptKeyword();
     while(kw != null) {
@@ -279,15 +279,15 @@ class diesler::Parser {
       kw = acceptKeyword();
     }
     if(args.length > 0) {
-      return new MessageSendTerm(scope, t, selector.as<String>, args.as<Array<Term>>);
+      return new ASTMessageSend(scope, t, selector.as<String>, args.as<Array<ASTNode>>);
     } else {
       return t;
     }
   }
 
-  Term acceptMSNoObject() {
+  ASTNode acceptMSNoObject() {
     var selector = new MutableString();
-    var args = new List<Term>();
+    var args = new List<ASTNode>();
     acceptWhiteSpace();
     var kw = acceptKeyword();
     while(kw != null) {
@@ -299,7 +299,7 @@ class diesler::Parser {
       kw = acceptKeyword();
     }
     if(args.length > 0) {
-      return new MessageSendTerm(scope, null, selector.as<String>, args.as<Array<Term>>);
+      return new ASTMessageSend(scope, null, selector.as<String>, args.as<Array<ASTNode>>);
     } else {
       return null;
     }
@@ -314,23 +314,23 @@ class diesler::Parser {
     }
   }
 
-  Term acceptList() {
+  ASTNode acceptList() {
     acceptWhiteSpace();
-    Term t = acceptMS();
+    ASTNode t = acceptMS();
     acceptWhiteSpace();
     if(t != null && accept(',')) {
-      var items = new List<Term>();
+      var items = new List<ASTNode>();
       items.add(t);
       acceptWhiteSpace();
       while(true) {
         t = acceptMS();
         acceptWhiteSpace();
         if(t == null) {
-          return new ListTerm(scope, items.as<Array<Term>>);
+          return new ASTList(scope, items.as<Array<ASTNode>>);
         }
         items.add(t);
         if(!accept(',')) {
-          return new ListTerm(scope, items.as<Array<Term>>);
+          return new ASTList(scope, items.as<Array<ASTNode>>);
         }
         acceptWhiteSpace();
       }
@@ -338,13 +338,13 @@ class diesler::Parser {
     return t;
   }
 
-  Term acceptExp() {
+  ASTNode acceptExp() {
     acceptWhiteSpace();
     var t = acceptList();
     return t;
   }
 
-  Term acceptAssign() {
+  ASTNode acceptAssign() {
     var oldI = i;
     var t = acceptPatternWithCondition();
     acceptWhiteSpace();
@@ -355,21 +355,21 @@ class diesler::Parser {
         i = oldI;
         return null;
       }
-      return new AssignTerm(scope, t, e);
+      return new ASTAssign(scope, t, e);
     } else {
       i = oldI;
       return null;
     }
   }
 
-  MatchTerm acceptPattern() {
+  ASTMatch acceptPattern() {
     var oldI = i;
     String idn = acceptIdn();
     if(idn != null) {
       acceptWhiteSpace();
       if(accept('[')) { // object pattern
         acceptWhiteSpace();
-        var l = new List<PropertyMatchTerm>();
+        var l = new List<ASTPropertyMatch>();
         while(!accept(']')) {
           var property = acceptIdn();
           if(property == null) {
@@ -381,7 +381,7 @@ class diesler::Parser {
             acceptWhiteSpace();
             var pattern = acceptPatternWithCondition();
             if(pattern != null) {
-              l.add(new PropertyMatchTerm(scope, property, pattern));
+              l.add(new ASTPropertyMatch(scope, property, pattern));
               acceptWhiteSpace();
             } else {
               i = oldI;
@@ -397,22 +397,22 @@ class diesler::Parser {
           }
           acceptWhiteSpace();
         }
-        return new ObjectMatchTerm(scope, idn, l.as<Array<PropertyMatchTerm>>);
+        return new ASTObjectMatch(scope, idn, l.as<Array<ASTPropertyMatch>>);
       } else { // Identifier pattern
-        return new IdnMatchTerm(scope, idn);
+        return new ASTIdnMatch(scope, idn);
       }
     }
-    Term literal = acceptLiteral();
+    ASTNode literal = acceptLiteral();
     if(literal != null) {
-      return new LiteralMatchTerm(scope, literal);
+      return new ASTLiteralMatch(scope, literal);
     }
     String fieldName = acceptFieldName();
     if(fieldName != null) {
-      return new FieldNameMatchTerm(scope, fieldName);
+      return new ASTFieldNameMatch(scope, fieldName);
     }
     if(accept('(')) {
       acceptWhiteSpace();
-      var l = new List<MatchTerm>();
+      var l = new List<ASTMatch>();
       while(true) {
         var mt = acceptPatternWithCondition();
         if(mt == null) {
@@ -422,7 +422,7 @@ class diesler::Parser {
         l.add(mt);
         acceptWhiteSpace();
         if(accept(')')) {
-          return new ListMatchTerm(scope, l.as<Array<MatchTerm>>);
+          return new ASTListMatch(scope, l.as<Array<ASTMatch>>);
         }
         if(!accept(',')) {
           i = oldI;
@@ -434,12 +434,12 @@ class diesler::Parser {
     return null;
   }
 
-  MatchTerm acceptPatternWithCondition() {
+  ASTMatch acceptPatternWithCondition() {
     var p = acceptPattern();
     if(p != null) {
       acceptWhiteSpace();
       if(accept('(')) {
-        Term condition = acceptStatement();
+        ASTNode condition = acceptStatement();
         p.condition = condition;
         expect(')');
         acceptWhiteSpace();
@@ -450,8 +450,8 @@ class diesler::Parser {
     }
   }
 
-  Term acceptStatement() {
-    Term t = acceptMSNoObject();
+  ASTNode acceptStatement() {
+    ASTNode t = acceptMSNoObject();
     if(t == null) {
       t = acceptAssign();
       if(t == null) {
@@ -462,14 +462,14 @@ class diesler::Parser {
         }
       }
     } else {
-      t.as<MessageSendTerm>.object = new IdnTerm(scope, "self");
+      t.as<ASTMessageSend>.object = new ASTIdn(scope, "self");
     }
     return t;
   }
 
-  BlockTerm acceptStatements() {
+  ASTBlock acceptStatements() {
     acceptWhiteSpace();
-    var stats = new List<Term>();
+    var stats = new List<ASTNode>();
     while(i < text.length) {
       var exp = acceptStatement();
       stats.add(exp);
@@ -479,7 +479,7 @@ class diesler::Parser {
         throw new ParseException("new line expected");
       }
     }
-    return new BlockTerm(scope, stats.as<Array<Term>>);
+    return new ASTBlock(scope, stats.as<Array<ASTNode>>);
   }
 
 
