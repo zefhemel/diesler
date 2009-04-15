@@ -24,12 +24,13 @@ class diesler::DSLList extends DSLObject {
 }
 
 DSLClass diesler::builtin::list::init(Scope scope) {
-  var list = new DSLClass(scope, scope["Object"].as<DSLClass>, "Int");
+  var list = new DSLClass(scope, scope["Object"].as<DSLClass>, "List");
   list.instanceMethods["add:"] = new diesler::builtin::list::AddMethod(scope);
   list.instanceMethods["remove:"] = new diesler::builtin::list::RemoveMethod(scope);
   list.instanceMethods["contains:"] = new diesler::builtin::list::ContainsMethod(scope);
   list.instanceMethods["get:"] = new diesler::builtin::list::GetMethod(scope);
   list.instanceMethods["length"] = new diesler::builtin::list::LengthMethod(scope);
+  list.instanceMethods["each:"] = new diesler::builtin::list::EachMethod(scope);
 
   list.instanceMethods["=="] = new diesler::builtin::list::EqualsMethod(scope);
   return list;
@@ -84,6 +85,19 @@ class diesler::builtin::list::LengthMethod extends DSLMethod {
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
     var l = o.as<DSLList>;
     return new DSLInt(scope, l.items.length);
+  }
+}
+
+class diesler::builtin::list::EachMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "each:", new Array<ASTMatch>(new ASTIdnMatch(scope, "block")), null) {
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    DSLMethod m = args[0].as<DSLMethod>;
+    for(DSLObject obj : o.as<DSLList>.items) {
+      m.invoke(scope, o, new Array<DSLObject>(obj));
+    }
+    return null;
   }
 }
 

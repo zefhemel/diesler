@@ -6,15 +6,14 @@ import "builtin/int.pil"
 import "builtin/list.pil"
 import "builtin/bool.pil"
 import "builtin/native.pil"
+import "builtin/method.pil"
 
 import diesler
 import diesler::exception
 
 void diesler::initInterpreter(Scope scope) {
   scope.setLocal("Object", diesler::builtin::object::init(scope));
-  var object = scope["Object"].as<DSLClass>;
-  var method = new DSLClass(scope, object, "Method");
-  scope.setLocal("Method", object);
+  scope.setLocal("Method", diesler::builtin::method::init(scope));
   scope.setLocal("String", diesler::builtin::string::init(scope));
   scope.setLocal("Int", diesler::builtin::int::init(scope));
   scope.setLocal("Bool", diesler::builtin::bool::init(scope));

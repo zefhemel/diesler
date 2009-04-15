@@ -1,8 +1,10 @@
-(a(isA: String), b(isA: Int), c(isA: Int)) = ("Zef", 25, 27)
+local (a(isA: String), b(isA: Int), c(isA: Int)) = ("Zef", 25, 27)
 print: (c, b, a)
 
-n (isA: Int) = 10
+local n (isA: Int) = 10
 print: n
+
+local User
 
 User = Object subClass: "User" withMethods: {
   init {
@@ -17,7 +19,7 @@ User = Object subClass: "User" withMethods: {
   age { @age }
 }
 
-zef = User new
+local zef = User new
 zef name: "Zef Hemel"
 zef age: 25
 
@@ -28,23 +30,23 @@ defineMethods: {
 
   saySomethingAbout: sth {
     match: sth against: {
-      str(isA: String): { 
+      str(isA: String) : { 
         print: "It's a string!" 
       }
 
-      10: {
+      10 : {
         print: "It's 10!"
       }
 
-      n(isA: Int): {
+      n(isA: Int) : {
         print: "It's an integer!"
       }
 
-      User[ name => "Zef Hemel" ]: {
+      User[ name => "Zef Hemel" ] : {
         print: "Hey Zef!"
       }
 
-      User[ name => name, age => age ]: {
+      User[ name => name, age => age ] : {
         print: "It's a user called " + name + " who's "
         print: age
       }

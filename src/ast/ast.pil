@@ -33,10 +33,28 @@ class diesler::ASTMessageSend extends diesler::ASTNode {
 }
 
 class diesler::ASTBlock extends diesler::ASTNode {
+  Array<ASTMatch> arguments = null;
   Array<ASTNode> statements = null;
 
-  new(Scope scope, Array<ASTNode> statements) extends super(scope["ASTBlock"]) {
+  new(Scope scope, Array<ASTMatch> arguments, Array<ASTNode> statements) extends super(scope["ASTBlock"]) {
+    this.arguments = arguments;
     this.statements = statements;
+  }
+}
+
+class diesler::ASTDeclBlock extends diesler::ASTNode {
+  Array<ASTMethodDef> declaredMethods = null;
+
+  new(Scope scope, Array<ASTMethodDef> declaredMethods) extends super(scope["ASTDeclBlock"]) {
+    this.declaredMethods = declaredMethods;
+  }
+}
+
+class diesler::ASTPatternBlock extends diesler::ASTNode {
+  Array<ASTPatternCase> patternCases = null;
+
+  new(Scope scope, Array<ASTPatternCase> patternCases) extends super(scope["ASTPatternBlock"]) {
+    this.patternCases = patternCases;
   }
 }
 

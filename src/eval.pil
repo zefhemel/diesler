@@ -38,7 +38,7 @@ class diesler::ASTMessageSend extends diesler::ASTNode {
 class diesler::ASTBlock extends diesler::ASTNode {
 
   DSLObject evalExp(Scope scope) {
-    var m = new DSLMethod(scope, "noname", new Array<ASTMatch>(), this);
+    var m = new DSLMethod(scope, "noname", arguments, this);
     m.closure = scope;
     return m;
   }
@@ -53,9 +53,23 @@ class diesler::ASTBlock extends diesler::ASTNode {
 }
 
 @extend
+class diesler::ASTDeclBlock extends diesler::ASTNode {
+  DSLObject eval(Scope scope) {
+    return new DSLMethodDefs(scope, declaredMethods);
+  }
+}
+
+@extend
+class diesler::ASTPatternBlock extends diesler::ASTNode {
+  DSLObject eval(Scope scope) {
+    return new DSLPatternBlock(scope, patternCases);
+  }
+}
+
+@extend
 class diesler::ASTAssign extends diesler::ASTNode {
   DSLObject eval(Scope scope) {
-    if(!lhs.match(scope, value.eval(scope), false)) {
+    if(!lhs.match(scope, value.evalExp(scope), false)) {
       throw new Exception("Match failed!");
     }
     return null;
@@ -82,7 +96,7 @@ class diesler::ASTLocalAssign extends diesler::ASTNode {
         throw new DieslerException(new DSLString(scope, "Invalid variable declaration."));
       }
     }
-    if(!lhs.match(scope, value.eval(scope), true)) {
+    if(!lhs.match(scope, value.evalExp(scope), true)) {
       throw new Exception("Match failed!");
     }
     return null;

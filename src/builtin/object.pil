@@ -1,6 +1,7 @@
 import "object.pil"
 import "io.pil"
 import "parser.pil"
+import "ast/ast.pil"
 
 import diesler
 import diesler::exception
@@ -33,6 +34,8 @@ DSLClass diesler::builtin::object::init(Scope scope) {
   object.instanceMethods["if:then:else:"] = new diesler::builtin::object::IfThenElseMethod(scope);
   object.instanceMethods["while:do:"] = new diesler::builtin::object::WhileMethod(scope);
   object.instanceMethods["match:against:"] = new diesler::builtin::object::MatchAgainstMethod(scope);
+
+  object.instanceMethods["try:catch:"] = new diesler::builtin::object::TryCatchMethod(scope);
   return object;
 }
 
@@ -137,9 +140,9 @@ class diesler::builtin::object::DefineMethods extends DSLMethod {
   }
 
   DSLObject invoke(Scope scope, DSLObject self, Array<DSLObject> args) {
-    var method = args[0].as<DSLMethod>;
-    for(ASTMethodDef mdt : method.block.statements) {
-      var newMethod = new DSLMethod(scope, mdt.signature.selector, mdt.signature.arguments, new ASTBlock(scope, mdt.statements));
+    DSLMethodDefs defs = args[0].as<DSLMethodDefs>;
+    for(ASTMethodDef mdt : defs.declaredMethods) {
+      var newMethod = new DSLMethod(scope, mdt.signature.selector, mdt.signature.arguments, new ASTBlock(scope, mdt.signature.arguments, mdt.statements));
       if(self isa DSLClass && instanceMethods) {
         self.as<DSLClass>.instanceMethods[mdt.signature.selector] = newMethod;
       } else {
@@ -156,10 +159,10 @@ class diesler::builtin::object::SubclassMethod extends DSLMethod {
 
   DSLObject invoke(Scope scope, DSLObject self, Array<DSLObject> args) {
     var className = args[0].as<DSLString>.value;
-    var definitions = args[1].as<DSLMethod>; 
+    var definitions = args[1].as<DSLMethodDefs>; 
     var cls = new DSLClass(scope, self.as<DSLClass>, className);
-    for(ASTMethodDef mdt : definitions.block.statements) {
-      var newMethod = new DSLMethod(scope, mdt.signature.selector, mdt.signature.arguments, new ASTBlock(scope, mdt.statements));
+    for(ASTMethodDef mdt : definitions.declaredMethods) {
+      var newMethod = new DSLMethod(scope, mdt.signature.selector, mdt.signature.arguments, new ASTBlock(scope, mdt.signature.arguments, mdt.statements));
       cls.instanceMethods[mdt.signature.selector] = newMethod;
     }
     return cls;
@@ -263,7 +266,7 @@ class diesler::builtin::object::MatchAgainstMethod extends DSLMethod {
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
     var expr = args[0];
-    for(ASTPatternCase ptt : args[1].as<DSLMethod>.block.statements) {
+    for(ASTPatternCase ptt : args[1].as<DSLPatternBlock>.patternCases) {
       Scope matchScope = new Scope(scope, o);
       if(ptt.match.match(matchScope, expr, true)) {
         ptt.block.eval(matchScope);
@@ -271,6 +274,24 @@ class diesler::builtin::object::MatchAgainstMethod extends DSLMethod {
       }
     }
     return o;
+  }
+}
+
+class diesler::builtin::object::TryCatchMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "try:catch:", new Array<ASTMatch>(new ASTIdnMatch(scope, "tryBlock"), new ASTIdnMatch(scope, "catchBlock")), null) {
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    DSLMethod tryBlock = args[0].as<DSLMethod>;
+    DSLMethod catchBlock = args[1].as<DSLMethod>;
+    Scope tryScope = new Scope(scope, o);
+    try {
+      tryBlock.invoke(tryScope, o, args);
+    } catch(DieslerException e) {
+      Scope catchScope = new Scope(scope, o);
+      catchBlock.invoke(catchScope, o, new Array<DSLObject>(e.obj));
+    }
+    return null;
   }
 }
 

@@ -31,7 +31,7 @@ void main(Array<String> args) {
         try {
           var result = block.eval(scope);
           if(result != null) {
-            println(result.as<String>);
+            println("Result: " + result.as<String>);
           }
         } catch(Exception e) {
           println("Error: " + e.as<String>);

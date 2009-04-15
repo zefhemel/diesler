@@ -1,0 +1,47 @@
+import "object.pil"
+
+import diesler
+import diesler::exception
+
+DSLClass diesler::builtin::method::init(Scope scope) {
+  var method = new DSLClass(scope, scope["Object"].as<DSLClass>, "Method");
+  method.instanceMethods["invokeOn:withArgs:"] = new diesler::builtin::method::InvokeOnMethod(scope);
+  method.instanceMethods["invoke:"] = new diesler::builtin::method::InvokeWithArgsMethod(scope);
+  method.instanceMethods["invoke"] = new diesler::builtin::method::InvokeMethod(scope);
+  return method;
+}
+
+class diesler::builtin::method::InvokeOnMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "invokeOn:withArgs:", new Array<ASTMatch>(new ASTIdnMatch(scope, "self"), new ASTIdnMatch(scope, "argList")), null) {
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    var m = o.as<DSLMethod>;
+    var self = args[0];
+    var arguments = args[1].as<DSLList>;
+    return m.invoke(scope, self, arguments.items.as<Array<DSLObject>>);
+  }
+}
+
+class diesler::builtin::method::InvokeWithArgsMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "invoke:", new Array<ASTMatch>(new ASTIdnMatch(scope, "argList")), null) {
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    var m = o.as<DSLMethod>;
+    var self = scope.self;
+    var arguments = args[0].as<DSLList>;
+    return m.invoke(scope, self, arguments.items.as<Array<DSLObject>>);
+  }
+}
+
+class diesler::builtin::method::InvokeMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "invoke", new Array<ASTMatch>(), null) {
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    var m = o.as<DSLMethod>;
+    var self = scope.self;
+    return m.invoke(scope, self, new Array<DSLObject>());
+  }
+}

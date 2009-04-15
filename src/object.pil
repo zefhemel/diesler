@@ -159,3 +159,26 @@ class diesler::DSLMethod extends DSLObject {
   }
 }
 
+class diesler::DSLMethodDefs extends DSLObject {
+  Array<ASTMethodDef> declaredMethods = null;
+
+  new(Scope scope, Array<ASTMethodDef> declaredMethods) extends super(scope["MethodDefs"].as<DSLClass>){
+    this.declaredMethods = declaredMethods;
+  }
+
+  as<String> {
+    return "Method defs";
+  }
+}
+
+class diesler::DSLPatternBlock extends DSLObject {
+  Array<ASTPatternCase> patternCases = null;
+
+  new(Scope scope, Array<ASTPatternCase> patternCases) extends super(scope["PatternBlock"].as<DSLClass>){
+    this.patternCases = patternCases;
+  }
+
+  as<String> {
+    return "Method defs";
+  }
+}
