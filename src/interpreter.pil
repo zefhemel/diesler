@@ -1,4 +1,4 @@
-import "ast.pil"
+import "ast/ast.pil"
 import "object.pil"
 import "builtin/object.pil"
 import "builtin/string.pil"

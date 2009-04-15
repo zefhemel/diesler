@@ -1,5 +1,5 @@
-diesler.jar: src/*.pil src/builtin/*.pil java-support/diesler/*.java
-	rm -f src/*.pil.h src/builtin/*.pil.h
+diesler.jar: src/*.pil src/builtin/*.pil src/ast/*.pil java-support/diesler/*.java
+	rm -f src/*.pil.h src/builtin/*.pil.h src/ast/*.pil.h
 	rm -rf out
 	cd src && pilc -i diesler.pil --java -d ../out
 	cp -r java-support/* out/
@@ -7,6 +7,6 @@ diesler.jar: src/*.pil src/builtin/*.pil java-support/diesler/*.java
 	cd out && jar cmf ../JavaManifest ../diesler.jar *
 
 clean:
-	rm -f src/*.pil.h src/builtin/*.pil.h
+	rm -f src/*.pil.h src/builtin/*.pil.h src/ast/*.pil.h
 	rm -rf out
 	rm -f diesler.jar

@@ -1,8 +1,7 @@
-import "ast.pil"
+import "ast/ast.pil"
 import "parser.pil"
 import "io.pil"
 import "interpreter.pil"
-//import "pretty.pil"
 
 import diesler
 

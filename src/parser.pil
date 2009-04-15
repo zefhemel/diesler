@@ -1,4 +1,4 @@
-import "ast.pil"
+import "ast/ast.pil"
 import "interpreter.pil"
 
 import diesler

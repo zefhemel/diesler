@@ -1,0 +1,144 @@
+import "object.pil"
+import "builtin/list.pil"
+import "ast/match.pil"
+
+import diesler
+import diesler::util
+
+include "ast/astpretty.pil"
+
+class diesler::ASTNode extends DSLObject {
+  new(DSLObject instanceOf) extends super(instanceOf.as<DSLClass>) {
+  }
+}
+
+class diesler::ASTMessageSend extends diesler::ASTNode {
+  ASTNode object = null;
+  String selector = null;
+  Array<ASTNode> arguments = null;
+
+  new(Scope scope, ASTNode object, String selector, Array<ASTNode> arguments) extends super(scope["ASTMessageSend"]) {
+    this.object = object;
+    this.selector = selector;
+    this.arguments = arguments;
+  }
+}
+
+class diesler::ASTBlock extends diesler::ASTNode {
+  Array<ASTNode> statements = null;
+
+  new(Scope scope, Array<ASTNode> statements) extends super(scope["ASTBlock"]) {
+    this.statements = statements;
+  }
+}
+
+class diesler::ASTPatternCase extends diesler::ASTNode {
+  ASTMatch match = null;
+  ASTBlock block = null;
+
+  new(Scope scope, ASTMatch match, ASTBlock block) extends super(scope["ASTPatternCase"]) {
+    this.match = match;
+    this.block = block;
+  }
+}
+
+class diesler::ASTMethodDef extends diesler::ASTNode {
+  ASTMethodSignature signature = null;
+  Array<ASTNode> statements = null;
+
+  new(Scope scope, ASTMethodSignature signature, Array<ASTNode> statements) extends super(scope["ASTMethodDef"]) {
+    this.signature = signature;
+    this.statements = statements;
+  }
+}
+
+class diesler::ASTMethodSignature extends diesler::ASTNode {
+  String selector = null;
+  Array<ASTMatch> arguments = null;
+
+  new(Scope scope, String selector, Array<ASTMatch> arguments) extends super(scope["ASTMethodSignature"]) {
+    this.selector = selector;
+    this.arguments = arguments;
+  }
+}
+
+class diesler::ASTAssign extends diesler::ASTNode {
+  ASTMatch lhs = null;
+  ASTNode value = null;
+
+  new(Scope scope, ASTMatch lhs, ASTNode value) extends super(scope["ASTAssignment"]) {
+    this.lhs = lhs;
+    this.value = value;
+  }
+}
+
+class diesler::ASTList extends diesler::ASTNode {
+  Array<ASTNode> values = null;
+
+  new(Scope scope, Array<ASTNode> values) extends super(scope["ASTList"]) {
+    this.values = values;
+  }
+}
+
+class diesler::ASTInt extends diesler::ASTNode {
+  Int value = 0;
+
+  new(Scope scope, Int value) extends super(scope["ASTInt"]) {
+    this.value = value;
+  }
+
+  Bool ==(Object o) {
+    if(o == null) {
+      return false;
+    }
+    if(o instanceof ASTInt) {
+      return o.as<ASTInt>.value == value;
+    } else {
+      return false;
+    }
+  }
+}
+
+class diesler::ASTBool extends diesler::ASTNode {
+  Bool value = false;
+
+  new(Scope scope, Bool value) extends super(scope["ASTBool"]) {
+    this.value = value;
+  }
+}
+
+class diesler::ASTString extends diesler::ASTNode {
+  String value = null;
+
+  new(Scope scope, String value) extends super(scope["ASTString"]) {
+    this.value = value;
+  }
+
+  Bool ==(Object o) {
+    if(o == null) {
+      return false;
+    }
+    if(o instanceof ASTString) {
+      return o.as<ASTString>.value == value;
+    } else {
+      return false;
+    }
+  }
+}
+
+class diesler::ASTIdn extends diesler::ASTNode {
+  String idn = null;
+
+  new(Scope scope, String idn) extends super(scope["ASTIdentifier"]) {
+    this.idn = idn;
+  }
+}
+
+class diesler::ASTFieldName extends diesler::ASTNode {
+  String fieldName = null;
+
+  new(Scope scope, String fieldName) extends super(scope["ASTFieldName"]) {
+    this.fieldName = fieldName;
+  }
+}
+

@@ -1,0 +1,152 @@
+String diesler::util::spaces(Int n) {
+  var m = new MutableString();
+  for(Int i = 0; i < n; i++) {
+    m.append("  ");
+  }
+  return m.as<String>;
+}
+
+@extend
+class diesler::ASTNode extends DSLObject {
+  String toIndentedString(Int depth) {
+    return "unkown";
+  }
+
+  as<String> {
+    return toIndentedString(0);
+  }
+}
+
+@extend
+class diesler::ASTMessageSend extends diesler::ASTNode {
+  String toIndentedString(Int depth) {
+    var s = new MutableString();
+    s.append(spaces(depth));
+    s.append("(");
+    if(object != null) {
+      s.append(object.as<String>);
+      s.append(" ");
+    }
+    s.append(selector);
+    var sawCons = false;
+    for(ASTNode t: arguments) {
+      if(t instanceof ASTMessageSend) {
+        s.append("\n");
+        sawCons = true;
+      } else {
+        s.append(' ');
+      }
+      s.append(t.toIndentedString(depth+1));
+    }
+    s.append(')');
+    return s.as<String>;
+  }
+}
+
+@extend
+class diesler::ASTBlock extends diesler::ASTNode {
+  String toIndentedString(Int depth) {
+    var s = new MutableString();
+    s.append("[\n");
+    for(ASTNode t : statements) {
+      s.append(t.toIndentedString(depth+1));
+      s.append('\n');
+    }
+    s.append(spaces(depth));
+    s.append("]");
+    return s.as<String>;
+  }
+}
+
+@extend
+class diesler::ASTPatternCase extends diesler::ASTNode {
+  String toIndentedString(Int depth) {
+    return "A pattern case";
+  }
+}
+
+@extend
+class diesler::ASTMethodDef extends diesler::ASTNode {
+  String toIndentedString(Int depth) {
+    var s = new MutableString();
+    s.append(signature.as<String>);
+    s.append(" [\n");
+    for(ASTNode t : statements) {
+      s.append(t.toIndentedString(depth+1));
+      s.append('\n');
+    }
+    s.append(spaces(depth));
+    s.append("]");
+    return s.as<String>;
+  }
+}
+
+@extend
+class diesler::ASTMethodSignature extends diesler::ASTNode {
+}
+
+@extend
+class diesler::ASTAssign extends diesler::ASTNode {
+  String toIndentedString(Int depth) {
+    var s = new MutableString();
+    s.append("(=\n");
+    s.append(spaces(depth) + lhs.toIndentedString(depth+1) + "\n");
+    s.append(spaces(depth) + value.toIndentedString(depth+1));
+    s.append(")");
+    return s.as<String>;
+  }
+}
+
+@extend
+class diesler::ASTList extends diesler::ASTNode {
+  String toIndentedString(Int depth) {
+    var s = new MutableString();
+    for(ASTNode value : values) {
+      s.append(value.as<String>);
+      if(value != values[values.length-1]) {
+        s.append(", ");
+      }
+    }
+    return s.as<String>;
+  }
+}
+
+@extend
+class diesler::ASTInt extends diesler::ASTNode {
+  String toIndentedString(Int depth) {
+    var ms = new MutableString();
+    ms.append(value);
+    return ms.as<String>;
+  }
+}
+
+@extend
+class diesler::ASTBool extends diesler::ASTNode {
+  String toIndentedString(Int depth) {
+    var ms = new MutableString();
+    ms.append(value);
+    return ms.as<String>;
+  }
+}
+
+@extend
+class diesler::ASTString extends diesler::ASTNode {
+  String toIndentedString(Int depth) {
+    return "\"" + value + "\"";
+  }
+}
+
+@extend
+class diesler::ASTIdn extends diesler::ASTNode {
+  String toIndentedString(Int depth) {
+    return idn;
+  }
+}
+
+@extend
+class diesler::ASTFieldName extends diesler::ASTNode {
+  String toIndentedString(Int depth) {
+    return fieldName;
+  }
+}
+
