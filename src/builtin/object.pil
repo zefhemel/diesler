@@ -140,7 +140,7 @@ class diesler::builtin::object::DefineMethods extends DSLMethod {
     var method = args[0].as<DSLMethod>;
     for(ASTMethodDef mdt : method.block.statements) {
       var newMethod = new DSLMethod(scope, mdt.signature.selector, mdt.signature.arguments, new ASTBlock(scope, mdt.statements));
-      if(self instanceof DSLClass && instanceMethods) {
+      if(self isa DSLClass && instanceMethods) {
         self.as<DSLClass>.instanceMethods[mdt.signature.selector] = newMethod;
       } else {
         self.methods[mdt.signature.selector] = newMethod;
@@ -203,7 +203,7 @@ class diesler::builtin::object::IfThenMethod extends DSLMethod {
     DSLMethod cond = args[0].as<DSLMethod>;
     DSLMethod trueBlock = args[1].as<DSLMethod>;
     DSLObject value = cond.invoke(scope, o, new Array<DSLObject>());
-    if(!(value instanceof DSLBool)) {
+    if(!(value isa DSLBool)) {
       throw new Exception("Condition should return a Bool: " + cond.as<String>);
     }
     if(value.as<DSLBool>.value) {
@@ -225,7 +225,7 @@ class diesler::builtin::object::IfThenElseMethod extends DSLMethod {
     DSLMethod trueBlock = args[1].as<DSLMethod>;
     DSLMethod falseBlock = args[2].as<DSLMethod>;
     DSLObject value = cond.invoke(scope, o, new Array<DSLObject>());
-    if(!(value instanceof DSLBool)) {
+    if(!(value isa DSLBool)) {
       throw new Exception("Condition should return in bool: " + cond.as<String>);
     }
     if(value.as<DSLBool>.value) {
@@ -246,7 +246,7 @@ class diesler::builtin::object::WhileMethod extends DSLMethod {
     DSLMethod cond = args[0].as<DSLMethod>;
     DSLMethod block = args[1].as<DSLMethod>;
     DSLObject value = cond.invoke(scope, o, new Array<DSLObject>());
-    if(!(value instanceof DSLBool)) {
+    if(!(value isa DSLBool)) {
       throw new Exception("Condition should return in bool: " + cond.as<String>);
     }
     while(value.as<DSLBool>.value) {
@@ -265,7 +265,7 @@ class diesler::builtin::object::MatchAgainstMethod extends DSLMethod {
     var expr = args[0];
     for(ASTPatternCase ptt : args[1].as<DSLMethod>.block.statements) {
       Scope matchScope = new Scope(scope, o);
-      if(ptt.match.match(matchScope, expr)) {
+      if(ptt.match.match(matchScope, expr, true)) {
         ptt.block.eval(matchScope);
         return o;
       }

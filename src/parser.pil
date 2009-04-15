@@ -346,6 +346,14 @@ class diesler::Parser {
 
   ASTNode acceptAssign() {
     var oldI = i;
+    var local = acceptIdnNoKeyword();
+    var isLocal = false;
+    if(local == "local") {
+      isLocal = true;
+      acceptWhiteSpace();
+    } else {
+      i = oldI;
+    }
     var t = acceptPatternWithCondition();
     acceptWhiteSpace();
     if(accept('=') && !accept('=')) {
@@ -355,10 +363,18 @@ class diesler::Parser {
         i = oldI;
         return null;
       }
-      return new ASTAssign(scope, t, e);
+      if(isLocal) {
+        return new ASTLocalAssign(scope, t, e);
+      } else {
+        return new ASTAssign(scope, t, e);
+      }
     } else {
-      i = oldI;
-      return null;
+      if(!isLocal) {
+        i = oldI;
+        return null;
+      } else { // Local variable declaration
+        return new ASTLocalAssign(scope, t, null);
+      }
     }
   }
 

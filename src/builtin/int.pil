@@ -18,7 +18,7 @@ class diesler::DSLInt extends DSLObject {
     if(other == null) {
       return false;
     }
-    if(other instanceof DSLInt) {
+    if(other isa DSLInt) {
       return value == other.as<DSLInt>.value;
     } else {
       return false;

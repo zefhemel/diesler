@@ -80,6 +80,16 @@ class diesler::ASTAssign extends diesler::ASTNode {
   }
 }
 
+class diesler::ASTLocalAssign extends diesler::ASTNode {
+  ASTMatch lhs = null;
+  ASTNode value = null;
+
+  new(Scope scope, ASTMatch lhs, ASTNode value) extends super(scope["ASTAssignment"]) {
+    this.lhs = lhs;
+    this.value = value;
+  }
+}
+
 class diesler::ASTList extends diesler::ASTNode {
   Array<ASTNode> values = null;
 
@@ -99,7 +109,7 @@ class diesler::ASTInt extends diesler::ASTNode {
     if(o == null) {
       return false;
     }
-    if(o instanceof ASTInt) {
+    if(o isa ASTInt) {
       return o.as<ASTInt>.value == value;
     } else {
       return false;
@@ -126,7 +136,7 @@ class diesler::ASTString extends diesler::ASTNode {
     if(o == null) {
       return false;
     }
-    if(o instanceof ASTString) {
+    if(o isa ASTString) {
       return o.as<ASTString>.value == value;
     } else {
       return false;

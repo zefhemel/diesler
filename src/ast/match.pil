@@ -10,7 +10,7 @@ Bool diesler::checkMatch(Scope scope, ASTNode condition, DSLObject object) {
     return true;
   }
   DSLObject result = condition.eval(scope.createLightSubScope(object));
-  if(result instanceof DSLBool) {
+  if(result isa DSLBool) {
     return result.as<DSLBool>.value;
   } else {
     return false;
@@ -23,7 +23,7 @@ class diesler::ASTMatch extends diesler::ASTNode {
   new(DSLObject cls) extends super(cls) {
   }
 
-  Bool match(Scope scope, DSLObject other) {
+  Bool match(Scope scope, DSLObject other, Bool bindLocal) {
     return false;
   }
 }
@@ -35,8 +35,12 @@ class diesler::ASTIdnMatch extends diesler::ASTMatch {
     this.idn = idn;
   }
 
-  Bool match(Scope scope, DSLObject other) {
-    scope[idn] = other;
+  Bool match(Scope scope, DSLObject other, Bool bindLocal) {
+    if(bindLocal) {
+      scope.setLocal(idn, other);
+    } else {
+      scope[idn] = other;
+    }
     return checkMatch(scope, condition, other);
   }
 }
@@ -48,7 +52,7 @@ class diesler::ASTFieldNameMatch extends diesler::ASTMatch {
     this.fieldName = fieldName;
   }
 
-  Bool match(Scope scope, DSLObject other) {
+  Bool match(Scope scope, DSLObject other, Bool bindLocal) {
     if(checkMatch(scope, condition, other)) {
       scope.self.setField(fieldName, other);
       return true;
@@ -65,8 +69,8 @@ class diesler::ASTListMatch extends diesler::ASTMatch {
     this.items = items;
   }
 
-  Bool match(Scope scope, DSLObject other) {
-    if(!(other instanceof DSLList)) {
+  Bool match(Scope scope, DSLObject other, Bool bindLocal) {
+    if(!(other isa DSLList)) {
       return false;
     }
     var l = other.as<DSLList>;
@@ -74,7 +78,7 @@ class diesler::ASTListMatch extends diesler::ASTMatch {
       return false;
     }
     for(Int i = 0; i < items.length; i++) {
-      if(!items[i].match(scope, l.items[i])) {
+      if(!items[i].match(scope, l.items[i], bindLocal)) {
         return false;
       }
     }
@@ -91,7 +95,7 @@ class diesler::ASTObjectMatch extends diesler::ASTMatch {
     this.properties = properties;
   }
 
-  Bool match(Scope scope, DSLObject other) {
+  Bool match(Scope scope, DSLObject other, Bool bindLocal) {
     DSLObject tmp = scope[classString];
     DSLClass klass = tmp.as<DSLClass>;
     if(!other.isInstanceOf(klass)) {
@@ -102,7 +106,7 @@ class diesler::ASTObjectMatch extends diesler::ASTMatch {
         return false;
       }
       var result = other.getMethod(pmt.property).invoke(scope, other, new Array<DSLObject>());
-      if(!pmt.pattern.match(scope, result)) {
+      if(!pmt.pattern.match(scope, result, bindLocal)) {
         return false;
       }
     }
@@ -127,7 +131,7 @@ class diesler::ASTLiteralMatch extends diesler::ASTMatch {
     this.value = value;
   }
 
-  Bool match(Scope scope, DSLObject other) {
+  Bool match(Scope scope, DSLObject other, Bool bindLocal) {
     var literalValue = value.eval(scope);
     if(literalValue == other) {
       return checkMatch(scope, condition, other);

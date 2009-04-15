@@ -11,14 +11,14 @@ import diesler
 import diesler::exception
 
 void diesler::initInterpreter(Scope scope) {
-  scope["Object"] = diesler::builtin::object::init(scope);
+  scope.setLocal("Object", diesler::builtin::object::init(scope));
   var object = scope["Object"].as<DSLClass>;
   var method = new DSLClass(scope, object, "Method");
-  scope["Method"] = object;
-  scope["String"] = diesler::builtin::string::init(scope);
-  scope["Int"] = diesler::builtin::int::init(scope);
-  scope["Bool"] = diesler::builtin::bool::init(scope);
-  scope["List"] = diesler::builtin::list::init(scope);
+  scope.setLocal("Method", object);
+  scope.setLocal("String", diesler::builtin::string::init(scope));
+  scope.setLocal("Int", diesler::builtin::int::init(scope));
+  scope.setLocal("Bool", diesler::builtin::bool::init(scope));
+  scope.setLocal("List", diesler::builtin::list::init(scope));
 }
 
 class diesler::Scope {
@@ -44,8 +44,20 @@ class diesler::Scope {
     }
   }
 
-  void set(String var, DSLObject value) {
+  void setLocal(String var, DSLObject value) {
     variables[var] = value;
+  }
+
+  void set(String var, DSLObject value) {
+    var scope = this;
+    while(!scope.variables.contains(var) && scope.parent != null) {
+      scope = scope.parent;
+    }
+    if(scope.variables.contains(var)) {
+      scope.variables[var] = value;
+    } else { // No such variable exists!
+      throw new DieslerException(new DSLString(scope, "No such variable declared: " + var));
+    }
   }
 
   Scope createLightSubScope(DSLObject self) {

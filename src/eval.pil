@@ -55,7 +55,34 @@ class diesler::ASTBlock extends diesler::ASTNode {
 @extend
 class diesler::ASTAssign extends diesler::ASTNode {
   DSLObject eval(Scope scope) {
-    if(!lhs.match(scope, value.eval(scope))) {
+    if(!lhs.match(scope, value.eval(scope), false)) {
+      throw new Exception("Match failed!");
+    }
+    return null;
+  }
+}
+
+@extend
+class diesler::ASTLocalAssign extends diesler::ASTNode {
+  DSLObject eval(Scope scope) {
+    if(value == null) { // Just local variable declaration
+      if(lhs isa ASTIdnMatch) {
+        scope.setLocal(lhs.as<ASTIdnMatch>.idn, null);
+        return null;
+      } else if(lhs isa ASTListMatch) {
+        for(ASTMatch m : lhs.as<ASTListMatch>.items) {
+          if(m isa ASTIdnMatch) {
+            scope.setLocal(m.as<ASTIdnMatch>.idn, null);
+          } else {
+            throw new DieslerException(new DSLString(scope, "Invalid variable declaration."));
+          }
+        }
+        return null;
+      } else {
+        throw new DieslerException(new DSLString(scope, "Invalid variable declaration."));
+      }
+    }
+    if(!lhs.match(scope, value.eval(scope), true)) {
       throw new Exception("Match failed!");
     }
     return null;
@@ -99,7 +126,7 @@ class diesler::ASTIdn extends diesler::ASTNode {
   DSLObject eval(Scope scope) {
     var value = scope.get(idn);
     if(value == null) {
-      throw new DieslerException("Unknown: " + idn);
+      throw new DieslerException(new DSLString(scope, "Unknown: " + idn));
     } else {
       return value;
     }

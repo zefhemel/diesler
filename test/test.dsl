@@ -1,15 +1,15 @@
 import: "stdlib.dsl"
 
-log = Logger new
+local log = Logger new
 log debug: "Testing"
 log level: 2
 log debug: "Testing 2"
 
-o = Object new
+local o = Object new
 o set: "name" to: "Zef Hemel"
 o set: "age" to: "25"
 print: "My age is: " + (o get: "age")
-str = "Hello"
+local str = "Hello"
 str = str + " there"
 str = str + " mister!"
 print: str
@@ -29,7 +29,7 @@ defineMethods: {
 }
 
 sayHello: "Zef"
-counter = 0
+local counter = 0
 
 Int defineInstanceMethods: {
   plusOne {
@@ -41,6 +41,8 @@ counter = counter plusOne
 counter = counter plusOne
 counter = counter plusOne
 print: counter
+
+local (User, zef, n)
 
 User = Object subClass: "User" withMethods: {
   init {

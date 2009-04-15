@@ -10,7 +10,10 @@ class diesler::exception::NoSuchFieldException extends Exception {
 }
 
 class diesler::exception::DieslerException extends Exception { 
-  new(String message) extends super(message) {
+  DSLObject obj = null;
+
+  new(DSLObject obj) extends super(obj.as<String>) {
+    this.obj = obj;
   }
 }
 
@@ -138,8 +141,8 @@ class diesler::DSLMethod extends DSLObject {
       localScope = new Scope(scope, self);
     }
     for(Int i = 0; i < argumentPatterns.length; i++) {
-      if(!argumentPatterns[i].match(localScope, args[i])) {
-        throw new DieslerException("Argument for message " + selector + " did not match pattern.");
+      if(!argumentPatterns[i].match(localScope, args[i], true)) {
+        throw new DieslerException(new DSLString(scope, "Argument for message " + selector + " did not match pattern."));
       }
       //localScope.variables[argumentNames[i]] = args[i];
     }

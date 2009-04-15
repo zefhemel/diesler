@@ -25,7 +25,7 @@ class diesler::ASTMessageSend extends diesler::ASTNode {
     s.append(selector);
     var sawCons = false;
     for(ASTNode t: arguments) {
-      if(t instanceof ASTMessageSend) {
+      if(t isa ASTMessageSend) {
         s.append("\n");
         sawCons = true;
       } else {

@@ -1,3 +1,5 @@
+local Logger
+
 Logger = Object subClass: "Logger" withMethods: {
   init {
     @level = 1
