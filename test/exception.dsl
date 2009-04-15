@@ -1,5 +1,13 @@
 try: {
-  n = 8
+  raise: 10
 } catch: |e| {
-  print: e
+  match: e against: {
+    n(isA: Int): {
+      print: n
+    }
+
+    _: {
+      print: "Something else"
+    }
+  }
 }

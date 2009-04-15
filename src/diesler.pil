@@ -31,7 +31,11 @@ void main(Array<String> args) {
         try {
           var result = block.eval(scope);
           if(result != null) {
-            println("Result: " + result.as<String>);
+            if(result.getMethod("describe") != null) {
+              println("Result: " + result.getMethod("describe").invoke(scope, result, new Array<DSLObject>()).as<String>);
+            } else {
+              println("Result: " + result.as<String>);
+            }
           }
         } catch(Exception e) {
           println("Error: " + e.as<String>);

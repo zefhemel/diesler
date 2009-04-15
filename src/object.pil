@@ -99,7 +99,7 @@ class diesler::DSLClass extends DSLObject {
       curCls = curCls.superClass;
     }
     if(curCls == null) {
-      throw new NoSuchMethodException(selector);
+      return new DSLObject(cls).getMethod(selector);
     } else {
       return curCls.methods[selector];
     }

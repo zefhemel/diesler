@@ -121,8 +121,8 @@ class diesler::Parser {
       while(!accept('}') && !accept(']')) {
         var stat = acceptStatement();
         if(stat == null) {
-          printRest();
-          throw new ParseException("Expected a statement, couln't parse it.");
+          i = oldI;
+          return null;
         }
         stats.add(stat);
         acceptWhiteSpace();
@@ -151,8 +151,26 @@ class diesler::Parser {
         } else {
           sig = acceptKeywordMethodSignature();
           if(sig == null) {
-            i = oldI;
-            return null;
+            // try operators
+            Int c = 0;
+            String op = null;
+            while(c < operators.length && op == null) {
+              op = acceptOps(operators[c]);
+              c++;
+            }
+            if(op != null) {
+              acceptWhiteSpace();
+              String operand = acceptIdnNoKeyword();
+              if(operand != null) {
+                sig = new ASTMethodSignature(scope, op, new Array<ASTMatch>(new ASTIdnMatch(scope, operand)));
+              } else {
+                i = oldI;
+                return null;
+              }
+            } else {
+              i = oldI;
+              return null;
+            }
           }
         } 
         acceptWhiteSpace();
@@ -485,14 +503,15 @@ class diesler::Parser {
   }
 
   ASTNode acceptStatement() {
+    var oldI = i;
     ASTNode t = acceptMSNoObject();
     if(t == null) {
       t = acceptAssign();
       if(t == null) {
         t = acceptExp();
         if(t == null) {
-          printRest();
-          throw new ParseException("Could not parse exception.");
+          i = oldI;
+          return null;
         }
       }
     } else {

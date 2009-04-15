@@ -21,3 +21,105 @@ Logger = Object subClass: "Logger" withMethods: {
     }
   }
 }
+
+Object defineInstanceMethods: {
+  not: e {
+    if: [ e == true ] then: {
+      return: false
+    } else: {
+      return: true
+    }
+  }
+}
+
+Bool defineInstanceMethods: {
+  && other {
+    if: [ self == true ] then: {
+      if: [ other == true ] then: {
+        return: true
+      } else: {
+        return: false
+      }
+    } else: {
+      return: false
+    }
+  }
+
+  || other {
+    if: [ self == true ] then: {
+      if: [ other == true ] then: {
+        return: true
+      } else: {
+        return: true
+      }
+    } else: {
+      if: [ other == true ] then: {
+        return: true
+      } else: {
+        return: false
+      }
+    }
+  }
+}
+
+Int defineInstanceMethods: {
+  <= other {
+    return: self < other || self == other
+  }
+
+  >= other {
+    return: self > other || self == other
+  }
+}
+
+local Set
+
+Set = Object subClass: "Set" withMethods: {
+  init {
+    @list = ()
+  }
+
+  add: e {
+    if: [ not: (@list contains: e) ] then: {
+      @list add: e
+    } 
+    return: @list
+  }
+
+  describe {
+    @list
+  }
+}
+
+List defineInstanceMethods: {
+  reverse {
+    local l = ()
+    local c = (self length) - 1
+    while: [ c >= 0 ] do: {
+      l add: (get: c)
+      c = c - 1
+    }
+    return: l
+  }
+
+  reverseEach: m {
+    self reverse each: m
+  }
+
+  addAll: l {
+    l each: |e| { add: e }
+    return: self
+  }
+}
+
+List defineMethods: {
+  rangeFrom: from to: to {
+    local c = from
+    local l = ()
+    while: [ c <= to ] do: {
+      l add: c
+      c = c + 1
+    }
+    return: l
+  }
+}

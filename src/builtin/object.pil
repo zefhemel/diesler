@@ -36,6 +36,7 @@ DSLClass diesler::builtin::object::init(Scope scope) {
   object.instanceMethods["match:against:"] = new diesler::builtin::object::MatchAgainstMethod(scope);
 
   object.instanceMethods["try:catch:"] = new diesler::builtin::object::TryCatchMethod(scope);
+  object.instanceMethods["raise:"] = new diesler::builtin::object::RaiseExceptionMethod(scope);
   return object;
 }
 
@@ -292,6 +293,15 @@ class diesler::builtin::object::TryCatchMethod extends DSLMethod {
       catchBlock.invoke(catchScope, o, new Array<DSLObject>(e.obj));
     }
     return null;
+  }
+}
+
+class diesler::builtin::object::RaiseExceptionMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "raise:", new Array<ASTMatch>(new ASTIdnMatch(scope, "exception")), null) {
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    throw new DieslerException(args[0]);
   }
 }
 

@@ -32,8 +32,8 @@ DSLClass diesler::builtin::int::init(Scope scope) {
   int.instanceMethods["-"] = new diesler::builtin::int::SubstractMethod(scope);
   int.instanceMethods["*"] = new diesler::builtin::int::MultiplyMethod(scope);
 
-  int.instanceMethods["<="] = new diesler::builtin::int::LessEqualMethod(scope);
-  int.instanceMethods[">="] = new diesler::builtin::int::GreaterEqualMethod(scope);
+  int.instanceMethods["<"] = new diesler::builtin::int::LessThanMethod(scope);
+  int.instanceMethods[">"] = new diesler::builtin::int::GreaterThanMethod(scope);
   return int;
 }
 
@@ -64,20 +64,20 @@ class diesler::builtin::int::MultiplyMethod extends DSLMethod {
   }
 }
 
-class diesler::builtin::int::LessEqualMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "<=", new Array<ASTMatch>(new ASTIdnMatch(scope, "other")), null) {
+class diesler::builtin::int::LessThanMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "<", new Array<ASTMatch>(new ASTIdnMatch(scope, "other")), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
-    return new DSLBool(scope, o.as<DSLInt>.value <= args[0].as<DSLInt>.value);
+    return new DSLBool(scope, o.as<DSLInt>.value < args[0].as<DSLInt>.value);
   }
 }
 
-class diesler::builtin::int::GreaterEqualMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, ">=", new Array<ASTMatch>(new ASTIdnMatch(scope, "other")), null) {
+class diesler::builtin::int::GreaterThanMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, ">", new Array<ASTMatch>(new ASTIdnMatch(scope, "other")), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
-    return new DSLBool(scope, o.as<DSLInt>.value >= args[0].as<DSLInt>.value);
+    return new DSLBool(scope, o.as<DSLInt>.value > args[0].as<DSLInt>.value);
   }
 }

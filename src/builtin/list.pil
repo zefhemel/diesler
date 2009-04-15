@@ -95,7 +95,7 @@ class diesler::builtin::list::EachMethod extends DSLMethod {
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
     DSLMethod m = args[0].as<DSLMethod>;
     for(DSLObject obj : o.as<DSLList>.items) {
-      m.invoke(scope, o, new Array<DSLObject>(obj));
+      m.invoke(scope, scope.self, new Array<DSLObject>(obj));
     }
     return null;
   }
