@@ -254,6 +254,9 @@ class diesler::builtin::object::WhileMethod extends DSLMethod {
     }
     while(value.as<DSLBool>.value) {
       block.invoke(scope, o, new Array<DSLObject>());
+      if(scope.hasReturned) {
+        return scope.returnValue;
+      }
       value = cond.invoke(scope, o, new Array<DSLObject>());
     }
     return o;

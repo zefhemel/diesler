@@ -147,7 +147,11 @@ class diesler::DSLMethod extends DSLObject {
       //localScope.variables[argumentNames[i]] = args[i];
     }
     DSLObject rv = block.eval(localScope);
-    if(localScope.returnValue != null) {
+    if(closure != null) { // embedded block, so set parent return value to local scope
+      scope.hasReturned = localScope.hasReturned;
+      scope.returnValue = localScope.returnValue;
+    }
+    if(localScope.hasReturned) {
       return localScope.returnValue;
     } else {
       return rv;
@@ -180,11 +184,13 @@ class diesler::DSLPatternMethod extends DSLMethod {
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
     var expr = args[0];
-    for(ASTPatternCase ptt : patternCases) {
+    for(Int i = 0; i < patternCases.length; i++) {
       Scope matchScope = new Scope(scope, o);
-      if(ptt.match.match(matchScope, expr, true)) {
-        ptt.block.eval(matchScope);
-        return o;
+      if(patternCases[i].match.match(matchScope, expr, true)) {
+        patternCases[i].block.eval(matchScope);
+        if(matchScope.hasReturned) {
+          return matchScope.returnValue;
+        }
       }
     }
     return o;

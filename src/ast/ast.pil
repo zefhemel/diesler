@@ -88,6 +88,14 @@ class diesler::ASTMethodSignature extends diesler::ASTNode {
   }
 }
 
+class diesler::ASTReturn extends diesler::ASTNode {
+  ASTNode value = null;
+
+  new(Scope scope, ASTNode value) extends super(scope["ASTReturn"]) {
+    this.value = value;
+  }
+}
+
 class diesler::ASTAssign extends diesler::ASTNode {
   ASTPattern lhs = null;
   ASTNode value = null;

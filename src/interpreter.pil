@@ -25,6 +25,7 @@ class diesler::Scope {
   DSLObject self = null;
   Map<String, DSLObject> variables = new Map<String, DSLObject>();
   DSLObject returnValue = null;
+  Bool hasReturned = false;
 
   new(Scope parent, DSLObject self) {
     this.parent = parent;

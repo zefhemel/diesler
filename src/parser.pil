@@ -390,6 +390,20 @@ class diesler::Parser {
     return t;
   }
 
+  ASTNode acceptReturn() {
+    var oldI = i;
+    var returnKW = acceptIdnNoKeyword();
+    if(returnKW != "return") {
+      i = oldI;
+      return null;
+    }
+    var value = acceptExp();
+    if(value != null) {
+      return new ASTReturn(scope, value);
+    }
+    throw new ParseException(this, "Expected expression");
+  }
+
   ASTNode acceptAssign() {
     var oldI = i;
     var local = acceptIdnNoKeyword();
@@ -543,20 +557,23 @@ class diesler::Parser {
   ASTNode acceptStatement() {
     var oldI = i;
     ASTNode t = acceptMSNoObject();
-    if(t == null) {
-      t = acceptAssign();
-      if(t == null) {
-        t = acceptExp();
-        if(t == null) {
-          throw new ParseException(this, "Statement expected");
-          //i = oldI;
-          //return null;
-        }
-      }
-    } else {
+    if(t != null) {
       t.as<ASTMessageSend>.object = new ASTIdn(scope, "self");
+      return t;
     }
-    return t;
+    t = acceptAssign();
+    if(t != null) {
+      return t;
+    }
+    t = acceptReturn();
+    if(t != null) {
+      return t;
+    }
+    t = acceptExp();
+    if(t != null) {
+      return t;
+    }
+    throw new ParseException(this, "Statement expected");
   }
 
   ASTBlock acceptStatements() {

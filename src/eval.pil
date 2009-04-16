@@ -22,10 +22,6 @@ class diesler::ASTMessageSend extends diesler::ASTNode {
     for(Int i = 0; i < arguments.length; i++) {
       args[i] = arguments[i].evalExp(scope);
     }
-    if(selector == "return:") {
-      scope.returnValue = args[0];
-      return scope.returnValue;
-    }
     DSLMethod method = o.getMethod(selector);
     if(method == null) {
       throw new NoSuchMethodException(selector);
@@ -44,11 +40,18 @@ class diesler::ASTBlock extends diesler::ASTNode {
   }
 
   DSLObject eval(Scope scope) {
-    DSLObject lastValue = null;
-    for(ASTNode t : statements) {
-      lastValue = t.eval(scope);
+    for(Int i = 0; i < statements.length; i++) {
+      if(i == statements.length-1) {
+        return statements[i].eval(scope);
+      } else {
+        statements[i].eval(scope);
+        if(scope.hasReturned) {
+          return scope.returnValue;
+        }
+      }
     }
-    return lastValue;
+    // Never happens
+    throw new Exception("Interpreter bug");
   }
 }
 
@@ -63,6 +66,15 @@ class diesler::ASTDeclBlock extends diesler::ASTNode {
 class diesler::ASTPatternBlock extends diesler::ASTNode {
   DSLObject eval(Scope scope) {
     return new DSLPatternMethod(scope, patternCases);
+  }
+}
+
+@extend
+class diesler::ASTReturn extends diesler::ASTNode {
+  DSLObject eval(Scope scope) {
+    scope.returnValue = value.eval(scope);
+    scope.hasReturned = true;
+    return scope.returnValue;
   }
 }
 
