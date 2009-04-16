@@ -390,7 +390,7 @@ class diesler::Parser {
     } else {
       i = oldI;
     }
-    var t = acceptPatternWithCondition();
+    var t = acceptAssignLHSPattern();//acceptPatternWithCondition();
     acceptWhiteSpace();
     if(accept('=') && !accept('=')) {
       acceptWhiteSpace();
@@ -411,6 +411,30 @@ class diesler::Parser {
       } else { // Local variable declaration
         return new ASTLocalAssign(scope, t, null);
       }
+    }
+  }
+
+  ASTMatch acceptAssignLHSPattern() {
+    var oldI = i;
+    var p = acceptPatternWithCondition();
+    acceptWhiteSpace();
+    var l = new List<ASTMatch>();
+    l.add(p);
+    while(accept(',')) {
+      acceptWhiteSpace();
+      p = acceptPatternWithCondition();
+      if(p != null) {
+        l.add(p);
+      } else {
+        i = oldI;
+        return null;
+      }
+      acceptWhiteSpace();
+    }
+    if(l.length == 1) {
+      return l[0];
+    } else {
+      return new ASTListMatch(scope, l.as<Array<ASTMatch>>);
     }
   }
 

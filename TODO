@@ -1,3 +1,6 @@
+* Fix return: (maybe make keyword instead?)
+* super method invocation
+* Unit testing framework
 * Finish native Java import
 * Object creation similar to object pattern match syntax: User[ name = "Zef Hemel", age = 25 ]
 * Make AST classes accessible from within the language
