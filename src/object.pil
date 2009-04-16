@@ -115,12 +115,12 @@ class diesler::DSLClass extends DSLObject {
 }
 
 class diesler::DSLMethod extends DSLObject {
-  Array<ASTMatch> argumentPatterns = null;
+  Array<ASTPattern> argumentPatterns = null;
   ASTBlock block = null;
   String selector = null;
   Scope closure = null;
 
-  new(Scope scope, String selector, Array<ASTMatch> argumentPatterns, ASTBlock block) extends super(scope["Method"].as<DSLClass>){
+  new(Scope scope, String selector, Array<ASTPattern> argumentPatterns, ASTBlock block) extends super(scope["Method"].as<DSLClass>){
     this.argumentPatterns = argumentPatterns;
     this.block = block;
     this.selector = selector;
@@ -171,14 +171,26 @@ class diesler::DSLMethodDefs extends DSLObject {
   }
 }
 
-class diesler::DSLPatternBlock extends DSLObject {
+class diesler::DSLPatternMethod extends DSLMethod {
   Array<ASTPatternCase> patternCases = null;
 
-  new(Scope scope, Array<ASTPatternCase> patternCases) extends super(scope["PatternBlock"].as<DSLClass>){
+  new(Scope scope, Array<ASTPatternCase> patternCases) extends super(scope, "matchMethod:", new Array<ASTPattern>(new ASTIdnPattern(scope, "exp")), null) {
     this.patternCases = patternCases;
   }
 
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    var expr = args[0];
+    for(ASTPatternCase ptt : patternCases) {
+      Scope matchScope = new Scope(scope, o);
+      if(ptt.match.match(matchScope, expr, true)) {
+        ptt.block.eval(matchScope);
+        return o;
+      }
+    }
+    return o;
+  }
+
   as<String> {
-    return "Method defs";
+    return "Pattern method";
   }
 }

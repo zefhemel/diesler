@@ -1,6 +1,6 @@
 local Logger
 
-Logger = Object subClass: "Logger" withMethods: {
+Logger = Object subClass: "Logger" with: methods{
   init {
     @level = 1
   }
@@ -22,7 +22,7 @@ Logger = Object subClass: "Logger" withMethods: {
   }
 }
 
-Object defineInstanceMethods: {
+Object defineInstance: methods{
   not: e {
     if: [ e == true ] then: {
       return: false
@@ -30,9 +30,13 @@ Object defineInstanceMethods: {
       return: true
     }
   }
+
+  match: e against: cs {
+    cs invoke: (e,)
+  }
 }
 
-Bool defineInstanceMethods: {
+Bool defineInstance: methods{
   && other {
     if: [ self == true ] then: {
       if: [ other == true ] then: {
@@ -62,7 +66,7 @@ Bool defineInstanceMethods: {
   }
 }
 
-Int defineInstanceMethods: {
+Int defineInstance: methods{
   <= other {
     return: self < other || self == other
   }
@@ -74,7 +78,7 @@ Int defineInstanceMethods: {
 
 local Set
 
-Set = Object subClass: "Set" withMethods: {
+Set = Object subClass: "Set" with: methods{
   init {
     @list = ()
   }
@@ -91,7 +95,7 @@ Set = Object subClass: "Set" withMethods: {
   }
 }
 
-List defineInstanceMethods: {
+List defineInstance: methods{
   reverse {
     local l = ()
     local c = (self length) - 1
@@ -112,7 +116,7 @@ List defineInstanceMethods: {
   }
 }
 
-List defineMethods: {
+List define: methods{
   rangeFrom: from to: to {
     local c = from
     local l = ()

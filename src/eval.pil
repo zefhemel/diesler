@@ -62,7 +62,7 @@ class diesler::ASTDeclBlock extends diesler::ASTNode {
 @extend
 class diesler::ASTPatternBlock extends diesler::ASTNode {
   DSLObject eval(Scope scope) {
-    return new DSLPatternBlock(scope, patternCases);
+    return new DSLPatternMethod(scope, patternCases);
   }
 }
 
@@ -80,13 +80,13 @@ class diesler::ASTAssign extends diesler::ASTNode {
 class diesler::ASTLocalAssign extends diesler::ASTNode {
   DSLObject eval(Scope scope) {
     if(value == null) { // Just local variable declaration
-      if(lhs isa ASTIdnMatch) {
-        scope.setLocal(lhs.as<ASTIdnMatch>.idn, null);
+      if(lhs isa ASTIdnPattern) {
+        scope.setLocal(lhs.as<ASTIdnPattern>.idn, null);
         return null;
-      } else if(lhs isa ASTListMatch) {
-        for(ASTMatch m : lhs.as<ASTListMatch>.items) {
-          if(m isa ASTIdnMatch) {
-            scope.setLocal(m.as<ASTIdnMatch>.idn, null);
+      } else if(lhs isa ASTListPattern) {
+        for(ASTPattern m : lhs.as<ASTListPattern>.items) {
+          if(m isa ASTIdnPattern) {
+            scope.setLocal(m.as<ASTIdnPattern>.idn, null);
           } else {
             throw new DieslerException(new DSLString(scope, "Invalid variable declaration."));
           }

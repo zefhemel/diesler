@@ -12,7 +12,7 @@ DSLClass diesler::builtin::method::init(Scope scope) {
 }
 
 class diesler::builtin::method::InvokeOnMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "invokeOn:withArgs:", new Array<ASTMatch>(new ASTIdnMatch(scope, "self"), new ASTIdnMatch(scope, "argList")), null) {
+  new(Scope scope) extends super(scope, "invokeOn:withArgs:", new Array<ASTPattern>(new ASTIdnPattern(scope, "self"), new ASTIdnPattern(scope, "argList")), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
@@ -24,7 +24,7 @@ class diesler::builtin::method::InvokeOnMethod extends DSLMethod {
 }
 
 class diesler::builtin::method::InvokeWithArgsMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "invoke:", new Array<ASTMatch>(new ASTIdnMatch(scope, "argList")), null) {
+  new(Scope scope) extends super(scope, "invoke:", new Array<ASTPattern>(new ASTIdnPattern(scope, "argList")), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
@@ -36,7 +36,7 @@ class diesler::builtin::method::InvokeWithArgsMethod extends DSLMethod {
 }
 
 class diesler::builtin::method::InvokeMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "invoke", new Array<ASTMatch>(), null) {
+  new(Scope scope) extends super(scope, "invoke", new Array<ASTPattern>(), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {

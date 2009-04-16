@@ -1,12 +1,12 @@
 try: {
   raise: 10
 } catch: |e| {
-  match: e against: {
-    n(isA: Int): {
+  match: e against: cases{
+    n(isA: Int) {
       print: n
     }
 
-    _: {
+    _ {
       print: "Something else"
     }
   }

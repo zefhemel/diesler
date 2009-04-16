@@ -5,7 +5,11 @@ import diesler
 import diesler::util
 
 class diesler::ParseException extends Exception {
-  new(String message) extends super(message) {
+  Parser parser = null;
+
+  new(Parser parser, String message) extends super(message) {
+    this.parser = parser;
+    parser.printRest();
   }
 }
 
@@ -39,8 +43,10 @@ class diesler::Parser {
       return lit;
     }
     var idn = acceptIdn();
-    if(idn != null) {
+    if(idn != null && idn != "cases" && idn != "methods") {
       return new ASTIdn(scope, idn);
+    } else {
+      i = oldI;
     }
     var fn = acceptFieldName();
     if(fn != null) {
@@ -67,7 +73,7 @@ class diesler::Parser {
     if(dgr != null) {
       return dgr;
     }
-    var mb = acceptMatchBlock();
+    var mb = acceptPatternBlock();
     if(mb != null) {
       return mb;
     }
@@ -100,10 +106,10 @@ class diesler::Parser {
   ASTBlock acceptBlock() {
     var oldI = i;
     acceptWhiteSpace();
-    List<ASTMatch> arguments = new List<ASTMatch>();
+    List<ASTPattern> arguments = new List<ASTPattern>();
     if(accept('|')) {
       acceptWhiteSpace();
-      ASTMatch arg = acceptPatternWithCondition();
+      ASTPattern arg = acceptPatternWithCondition();
       while(arg != null) {
         arguments.add(arg);
         acceptWhiteSpace();
@@ -133,13 +139,19 @@ class diesler::Parser {
           acceptAnyWhiteSpace();
         }
       }
-      return new ASTBlock(scope, arguments.as<Array<ASTMatch>>, stats.as<Array<ASTNode>>);
+      return new ASTBlock(scope, arguments.as<Array<ASTPattern>>, stats.as<Array<ASTNode>>);
     }
     return null;
   }
 
   ASTNode acceptDeclBlock() {
     var oldI = i;
+    var methodsKw = acceptIdnNoKeyword();
+    if(methodsKw != "methods") {
+      i = oldI;
+      return null;
+    }
+    acceptWhiteSpace();
     if(accept('{')) {
       acceptAnyWhiteSpace();
       var decls = new List<ASTMethodDef>();
@@ -147,7 +159,7 @@ class diesler::Parser {
         String postfixMethodname = acceptIdnNoKeyword();
         ASTMethodSignature sig = null;
         if(postfixMethodname != null) {
-          sig = new ASTMethodSignature(scope, postfixMethodname, new Array<ASTMatch>());
+          sig = new ASTMethodSignature(scope, postfixMethodname, new Array<ASTPattern>());
         } else {
           sig = acceptKeywordMethodSignature();
           if(sig == null) {
@@ -160,24 +172,21 @@ class diesler::Parser {
             }
             if(op != null) {
               acceptWhiteSpace();
-              String operand = acceptIdnNoKeyword();
-              if(operand != null) {
-                sig = new ASTMethodSignature(scope, op, new Array<ASTMatch>(new ASTIdnMatch(scope, operand)));
+              ASTPattern operandPattern = acceptPatternWithCondition();
+              if(operandPattern != null) {
+                sig = new ASTMethodSignature(scope, op, new Array<ASTPattern>(operandPattern));
               } else {
-                i = oldI;
-                return null;
+                throw new ParseException(this, "operand pattern expected");
               }
             } else {
-              i = oldI;
-              return null;
+              throw new ParseException(this, "method declaration expected");
             }
           }
         } 
         acceptWhiteSpace();
         var b = acceptBlock();
         if(b == null) {
-          i = oldI;
-          return null;
+          throw new ParseException(this, "Block expected");
         }
         decls.add(new ASTMethodDef(scope, sig, b.statements));
         acceptAnyWhiteSpace();
@@ -187,51 +196,52 @@ class diesler::Parser {
     return null;
   }
 
-  ASTNode acceptMatchBlock() {
+  ASTNode acceptPatternBlock() {
     var oldI = i;
+    var casesKw = acceptIdnNoKeyword();
+    if(casesKw != "cases") {
+      i = oldI;
+      return null;
+    }
+    acceptWhiteSpace();
     if(accept('{')) {
       acceptAnyWhiteSpace();
       var cases = new List<ASTPatternCase>();
       while(!accept('}')) {
-        ASTMatch match = acceptPatternWithCondition();
+        ASTPattern match = acceptPatternWithCondition();
         if(match != null) {
           acceptWhiteSpace();
-          if(accept(':')) {
-            acceptWhiteSpace();
-            ASTBlock block = acceptBlock();
-            if(block != null) {
-              cases.add(new ASTPatternCase(scope, match, block));
-            }
-          } else {
-            i = oldI;
-            return null;
+          ASTBlock block = acceptBlock();
+          if(block != null) {
+            cases.add(new ASTPatternCase(scope, match, block));
           }
         } else {
-          i = oldI;
-          return null;
+          throw new ParseException(this, "Pattern expected");
         } 
         acceptAnyWhiteSpace();
       }
       return new ASTPatternBlock(scope, cases.as<Array<ASTPatternCase>>);
+    } else {
+      i = oldI;
+      return null;
     }
-    return null;
   }
 
   ASTMethodSignature acceptKeywordMethodSignature() {
     var selector = new MutableString();
-    var args = new List<ASTMatch>();
+    var args = new List<ASTPattern>();
     acceptWhiteSpace();
     var kw = acceptKeyword();
     while(kw != null) {
       selector.append(kw);
       acceptWhiteSpace();
-      ASTMatch arg = acceptPatternWithCondition();
+      ASTPattern arg = acceptPatternWithCondition();
       args.add(arg);
       acceptWhiteSpace();
       kw = acceptKeyword();
     }
     if(args.length > 0) {
-      return new ASTMethodSignature(scope, selector.as<String>, args.as<Array<ASTMatch>>);
+      return new ASTMethodSignature(scope, selector.as<String>, args.as<Array<ASTPattern>>);
     } else {
       return null;
     }
@@ -257,7 +267,7 @@ class diesler::Parser {
       t2 = acceptGeneric(level);
       if(t2 == null) {
         printRest();
-        throw new ParseException("Expected an expression.");
+        throw new ParseException(this, "Expression expected");
       }
       t = new ASTMessageSend(scope, t, op, new Array<ASTNode>(t2));
       oldI = i;
@@ -414,11 +424,11 @@ class diesler::Parser {
     }
   }
 
-  ASTMatch acceptAssignLHSPattern() {
+  ASTPattern acceptAssignLHSPattern() {
     var oldI = i;
     var p = acceptPatternWithCondition();
     acceptWhiteSpace();
-    var l = new List<ASTMatch>();
+    var l = new List<ASTPattern>();
     l.add(p);
     while(accept(',')) {
       acceptWhiteSpace();
@@ -434,18 +444,22 @@ class diesler::Parser {
     if(l.length == 1) {
       return l[0];
     } else {
-      return new ASTListMatch(scope, l.as<Array<ASTMatch>>);
+      return new ASTListPattern(scope, l.as<Array<ASTPattern>>);
     }
   }
 
-  ASTMatch acceptPattern() {
+  ASTPattern acceptPattern() {
     var oldI = i;
     String idn = acceptIdn();
     if(idn != null) {
       acceptWhiteSpace();
+      if(accept('@')) {
+        acceptWhiteSpace();
+        return new ASTBindPattern(scope, idn, acceptPattern());
+      }
       if(accept('[')) { // object pattern
         acceptWhiteSpace();
-        var l = new List<ASTPropertyMatch>();
+        var l = new List<ASTPropertyPattern>();
         while(!accept(']')) {
           var property = acceptIdn();
           if(property == null) {
@@ -457,7 +471,7 @@ class diesler::Parser {
             acceptWhiteSpace();
             var pattern = acceptPatternWithCondition();
             if(pattern != null) {
-              l.add(new ASTPropertyMatch(scope, property, pattern));
+              l.add(new ASTPropertyPattern(scope, property, pattern));
               acceptWhiteSpace();
             } else {
               i = oldI;
@@ -473,22 +487,22 @@ class diesler::Parser {
           }
           acceptWhiteSpace();
         }
-        return new ASTObjectMatch(scope, idn, l.as<Array<ASTPropertyMatch>>);
+        return new ASTObjectPattern(scope, idn, l.as<Array<ASTPropertyPattern>>);
       } else { // Identifier pattern
-        return new ASTIdnMatch(scope, idn);
+        return new ASTIdnPattern(scope, idn);
       }
     }
     ASTNode literal = acceptLiteral();
     if(literal != null) {
-      return new ASTLiteralMatch(scope, literal);
+      return new ASTLiteralPattern(scope, literal);
     }
     String fieldName = acceptFieldName();
     if(fieldName != null) {
-      return new ASTFieldNameMatch(scope, fieldName);
+      return new ASTFieldNamePattern(scope, fieldName);
     }
     if(accept('(')) {
       acceptWhiteSpace();
-      var l = new List<ASTMatch>();
+      var l = new List<ASTPattern>();
       while(true) {
         var mt = acceptPatternWithCondition();
         if(mt == null) {
@@ -498,7 +512,7 @@ class diesler::Parser {
         l.add(mt);
         acceptWhiteSpace();
         if(accept(')')) {
-          return new ASTListMatch(scope, l.as<Array<ASTMatch>>);
+          return new ASTListPattern(scope, l.as<Array<ASTPattern>>);
         }
         if(!accept(',')) {
           i = oldI;
@@ -510,7 +524,7 @@ class diesler::Parser {
     return null;
   }
 
-  ASTMatch acceptPatternWithCondition() {
+  ASTPattern acceptPatternWithCondition() {
     var p = acceptPattern();
     if(p != null) {
       acceptWhiteSpace();
@@ -534,8 +548,9 @@ class diesler::Parser {
       if(t == null) {
         t = acceptExp();
         if(t == null) {
-          i = oldI;
-          return null;
+          throw new ParseException(this, "Statement expected");
+          //i = oldI;
+          //return null;
         }
       }
     } else {
@@ -552,11 +567,10 @@ class diesler::Parser {
       stats.add(exp);
       acceptWhiteSpace();
       if(!acceptNewline()) {
-        printRest();
-        throw new ParseException("new line expected");
+        throw new ParseException(this, "Newline or ; expected");
       }
     }
-    return new ASTBlock(scope, new Array<ASTMatch>(), stats.as<Array<ASTNode>>);
+    return new ASTBlock(scope, new Array<ASTPattern>(), stats.as<Array<ASTNode>>);
   }
 
 
@@ -711,14 +725,14 @@ class diesler::Parser {
     if(i == text.length) {
       print("Rest of the buffer: ");
       printRest();
-      throw new ParseException("Expected: " + c.as<String>);
+      throw new ParseException(this, "Expected: " + c.as<String>);
     }
     if(text[i] == c) {
       i++;
     } else {
       print("Rest of the buffer: ");
       printRest();
-      throw new ParseException("Expected: " + c.as<String>);
+      throw new ParseException(this, "Expected: " + c.as<String>);
     }
   }
 

@@ -2,42 +2,42 @@ import "utils.pil"
 import diesler::util
 
 @extend
-class diesler::ASTIdnMatch extends diesler::ASTMatch {
+class diesler::ASTIdnPattern extends diesler::ASTPattern {
   String toIndentedString(Int depth) {
     return idn;
   }
 }
 
 @extend
-class diesler::ASTFieldNameMatch extends diesler::ASTMatch {
+class diesler::ASTFieldNamePattern extends diesler::ASTPattern {
   String toIndentedString(Int depth) {
     return fieldName;
   }
 }
 
 @extend
-class diesler::ASTListMatch extends diesler::ASTMatch {
+class diesler::ASTListPattern extends diesler::ASTPattern {
   String toIndentedString(Int depth) {
     return items.as<String>;
   }
 }
 
 @extend
-class diesler::ASTObjectMatch extends diesler::ASTMatch {
+class diesler::ASTObjectPattern extends diesler::ASTPattern {
   String toIndentedString(Int depth) {
     return properties.as<String>;
   }
 }
 
 @extend
-class diesler::ASTPropertyMatch extends diesler::ASTMatch {
+class diesler::ASTPropertyPattern extends diesler::ASTPattern {
   String toIndentedString(Int depth) {
     return property;
   }
 }
 
 @extend
-class diesler::ASTLiteralMatch extends diesler::ASTMatch {
+class diesler::ASTLiteralPattern extends diesler::ASTPattern {
   String toIndentedString(Int depth) {
     return value.as<String>;
   }

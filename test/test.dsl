@@ -9,12 +9,13 @@ local o = Object new
 o set: "name" to: "Zef Hemel"
 o set: "age" to: "25"
 print: "My age is: " + (o get: "age")
+
 local str = "Hello"
 str = str + " there"
 str = str + " mister!"
 print: str
 
-defineMethods: {
+define: methods{
    sayHello: name {
     say: "Hello" to: name
    }
@@ -31,7 +32,7 @@ defineMethods: {
 sayHello: "Zef"
 local counter = 0
 
-Int defineInstanceMethods: {
+Int defineInstance: methods{
   plusOne {
     return: self + 1
   }
@@ -44,7 +45,7 @@ print: counter
 
 local User, zef, n
 
-User = Object subClass: "User" withMethods: {
+User = Object subClass: "User" with: methods{
   init {
     set: "name" to: "unkown"
     set: "age" to: 0
@@ -65,7 +66,7 @@ while: [n != 0] do: {
   n = n - 1
 }
 
-Int defineInstanceMethods: {
+Int defineInstance: methods{
   fact {
     if: [ self == 0 ] then: {
       return: 1

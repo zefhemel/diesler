@@ -1,9 +1,11 @@
+local StringBuilder, JavaString
+
 StringBuilder = Object importNativeClass: "java.lang.StringBuilder"
-s = StringBuilder new: "initial value"
+local s = StringBuilder new: "initial value"
 s append: "Bla"
 s append: "Bla"
 s append: "Bla"
-str = s toString 
+local str = s toString 
 print: "It says: " + str
 
 JavaString = Object importNativeClass: "java.lang.String"

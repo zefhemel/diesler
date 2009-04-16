@@ -33,10 +33,10 @@ class diesler::ASTMessageSend extends diesler::ASTNode {
 }
 
 class diesler::ASTBlock extends diesler::ASTNode {
-  Array<ASTMatch> arguments = null;
+  Array<ASTPattern> arguments = null;
   Array<ASTNode> statements = null;
 
-  new(Scope scope, Array<ASTMatch> arguments, Array<ASTNode> statements) extends super(scope["ASTBlock"]) {
+  new(Scope scope, Array<ASTPattern> arguments, Array<ASTNode> statements) extends super(scope["ASTBlock"]) {
     this.arguments = arguments;
     this.statements = statements;
   }
@@ -59,10 +59,10 @@ class diesler::ASTPatternBlock extends diesler::ASTNode {
 }
 
 class diesler::ASTPatternCase extends diesler::ASTNode {
-  ASTMatch match = null;
+  ASTPattern match = null;
   ASTBlock block = null;
 
-  new(Scope scope, ASTMatch match, ASTBlock block) extends super(scope["ASTPatternCase"]) {
+  new(Scope scope, ASTPattern match, ASTBlock block) extends super(scope["ASTPatternCase"]) {
     this.match = match;
     this.block = block;
   }
@@ -80,29 +80,29 @@ class diesler::ASTMethodDef extends diesler::ASTNode {
 
 class diesler::ASTMethodSignature extends diesler::ASTNode {
   String selector = null;
-  Array<ASTMatch> arguments = null;
+  Array<ASTPattern> arguments = null;
 
-  new(Scope scope, String selector, Array<ASTMatch> arguments) extends super(scope["ASTMethodSignature"]) {
+  new(Scope scope, String selector, Array<ASTPattern> arguments) extends super(scope["ASTMethodSignature"]) {
     this.selector = selector;
     this.arguments = arguments;
   }
 }
 
 class diesler::ASTAssign extends diesler::ASTNode {
-  ASTMatch lhs = null;
+  ASTPattern lhs = null;
   ASTNode value = null;
 
-  new(Scope scope, ASTMatch lhs, ASTNode value) extends super(scope["ASTAssignment"]) {
+  new(Scope scope, ASTPattern lhs, ASTNode value) extends super(scope["ASTAssignment"]) {
     this.lhs = lhs;
     this.value = value;
   }
 }
 
 class diesler::ASTLocalAssign extends diesler::ASTNode {
-  ASTMatch lhs = null;
+  ASTPattern lhs = null;
   ASTNode value = null;
 
-  new(Scope scope, ASTMatch lhs, ASTNode value) extends super(scope["ASTAssignment"]) {
+  new(Scope scope, ASTPattern lhs, ASTNode value) extends super(scope["ASTAssignment"]) {
     this.lhs = lhs;
     this.value = value;
   }

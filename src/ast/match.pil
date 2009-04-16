@@ -17,7 +17,7 @@ Bool diesler::checkMatch(Scope scope, ASTNode condition, DSLObject object) {
   }
 }
 
-class diesler::ASTMatch extends diesler::ASTNode {
+class diesler::ASTPattern extends diesler::ASTNode {
   ASTNode condition = null;
 
   new(DSLObject cls) extends super(cls) {
@@ -28,10 +28,32 @@ class diesler::ASTMatch extends diesler::ASTNode {
   }
 }
 
-class diesler::ASTIdnMatch extends diesler::ASTMatch {
+class diesler::ASTBindPattern extends diesler::ASTPattern {
+  String idn = null;
+  ASTPattern match = null;
+
+  new(Scope scope, String idn, ASTPattern match) extends super(scope["ASTBindPattern"]) {
+    this.idn = idn;
+    this.match = match;
+  }
+
+  Bool match(Scope scope, DSLObject other, Bool bindLocal) {
+    if(match.match(scope, other, bindLocal)) {
+      if(bindLocal) {
+        scope.setLocal(idn, other);
+      } else {
+        scope[idn] = other;
+      }
+    } else {
+      return false;
+    }
+    return checkMatch(scope, condition, other);
+  }
+}
+class diesler::ASTIdnPattern extends diesler::ASTPattern {
   String idn = null;
 
-  new(Scope scope, String idn) extends super(scope["ASTIdentifierMatch"]) {
+  new(Scope scope, String idn) extends super(scope["ASTIdentifierPattern"]) {
     this.idn = idn;
   }
 
@@ -45,10 +67,10 @@ class diesler::ASTIdnMatch extends diesler::ASTMatch {
   }
 }
 
-class diesler::ASTFieldNameMatch extends diesler::ASTMatch {
+class diesler::ASTFieldNamePattern extends diesler::ASTPattern {
   String fieldName = null;
 
-  new(Scope scope, String fieldName) extends super(scope["ASTIdentifierMatch"]) {
+  new(Scope scope, String fieldName) extends super(scope["ASTIdentifierPattern"]) {
     this.fieldName = fieldName;
   }
 
@@ -62,10 +84,10 @@ class diesler::ASTFieldNameMatch extends diesler::ASTMatch {
   }
 }
 
-class diesler::ASTListMatch extends diesler::ASTMatch {
-  Array<ASTMatch> items = null;
+class diesler::ASTListPattern extends diesler::ASTPattern {
+  Array<ASTPattern> items = null;
 
-  new(Scope scope, Array<ASTMatch> items) extends super(scope["ASTListMatch"]) {
+  new(Scope scope, Array<ASTPattern> items) extends super(scope["ASTListPattern"]) {
     this.items = items;
   }
 
@@ -86,11 +108,11 @@ class diesler::ASTListMatch extends diesler::ASTMatch {
   }
 }
 
-class diesler::ASTObjectMatch extends diesler::ASTMatch {
+class diesler::ASTObjectPattern extends diesler::ASTPattern {
   String classString = null;
-  Array<ASTPropertyMatch> properties = null;
+  Array<ASTPropertyPattern> properties = null;
 
-  new(Scope scope, String classString, Array<ASTPropertyMatch> properties) extends super(scope["ASTObjectMatch"]) {
+  new(Scope scope, String classString, Array<ASTPropertyPattern> properties) extends super(scope["ASTObjectPattern"]) {
     this.classString = classString;
     this.properties = properties;
   }
@@ -101,7 +123,7 @@ class diesler::ASTObjectMatch extends diesler::ASTMatch {
     if(!other.isInstanceOf(klass)) {
       return false;
     }
-    for(ASTPropertyMatch pmt : properties) {
+    for(ASTPropertyPattern pmt : properties) {
       if(other.getMethod(pmt.property) == null) {
         return false;
       }
@@ -114,20 +136,20 @@ class diesler::ASTObjectMatch extends diesler::ASTMatch {
   }
 }
 
-class diesler::ASTPropertyMatch extends diesler::ASTMatch {
+class diesler::ASTPropertyPattern extends diesler::ASTPattern {
   String property = null;
-  ASTMatch pattern = null;
+  ASTPattern pattern = null;
 
-  new(Scope scope, String property, ASTMatch pattern) extends super(scope["ASTPropertyMatch"]) {
+  new(Scope scope, String property, ASTPattern pattern) extends super(scope["ASTPropertyPattern"]) {
     this.property = property;
     this.pattern = pattern;
   }
 }
 
-class diesler::ASTLiteralMatch extends diesler::ASTMatch {
+class diesler::ASTLiteralPattern extends diesler::ASTPattern {
   ASTNode value = null;
 
-  new(Scope scope, ASTNode value) extends super(scope["ASTLiteralMatch"]) {
+  new(Scope scope, ASTNode value) extends super(scope["ASTLiteralPattern"]) {
     this.value = value;
   }
 
