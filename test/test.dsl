@@ -42,7 +42,7 @@ counter = counter plusOne
 counter = counter plusOne
 print: counter
 
-local (User, zef, n)
+local User, zef, n
 
 User = Object subClass: "User" withMethods: {
   init {
