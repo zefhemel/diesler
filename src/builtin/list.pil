@@ -32,7 +32,7 @@ DSLClass diesler::builtin::list::init(Scope scope) {
   list.setInstanceMethod("contains:", new diesler::builtin::list::ContainsMethod(scope));
   list.setInstanceMethod("get:", new diesler::builtin::list::GetMethod(scope));
   list.setInstanceMethod("length", new diesler::builtin::list::LengthMethod(scope));
-  list.setInstanceMethod("each:", new diesler::builtin::list::EachMethod(scope));
+  //list.setInstanceMethod("each:", new diesler::builtin::list::EachMethod(scope));
 
   list.setInstanceMethod("==", new diesler::builtin::list::EqualsMethod(scope));
   return list;

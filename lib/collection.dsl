@@ -28,6 +28,24 @@ List defineInstance: methods{
     return l
   }
 
+  each: m {
+    local i = 0
+    while: [ i < self length ] do: {
+      m invoke: ((get: i),)
+      i = i + 1
+    }
+  }
+
+  map: m {
+    local i = 0
+    local resultList = ()
+    while: [ i < self length ] do: {
+      resultList add: (m invoke: ((get: i),))
+      i = i + 1
+    }
+    return resultList
+  }
+
   reverseEach: m {
     self reverse each: m
   }

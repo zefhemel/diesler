@@ -252,7 +252,7 @@ class diesler::Parser {
   ASTNode acceptGeneric(Int level) {
     ASTNode f = null;
     if(level == 0) {
-      f = acceptFactor();
+      f = acceptPostfix(); //Factor();
     } else {
       f = acceptGeneric(level-1);
     }
@@ -281,7 +281,7 @@ class diesler::Parser {
   }
 
   ASTNode acceptPostfix() {
-    var t = acceptGeneric(operators.length-1);
+    var t = acceptFactor(); //Generic(operators.length-1);
     var oldI = i;
     acceptWhiteSpace();
     var idn = acceptIdnNoKeyword();
@@ -313,7 +313,7 @@ class diesler::Parser {
   }
 
   ASTNode acceptMS() {
-    var t = acceptPostfix();
+    var t = acceptGeneric(operators.length-1);
     var selector = new MutableString();
     var args = new List<ASTNode>();
     acceptWhiteSpace();
@@ -321,7 +321,7 @@ class diesler::Parser {
     while(kw != null) {
       selector.append(kw);
       acceptWhiteSpace();
-      var arg = acceptPostfix();
+      var arg = acceptGeneric(operators.length-1);
       args.add(arg);
       acceptWhiteSpace();
       kw = acceptKeyword();
@@ -341,7 +341,7 @@ class diesler::Parser {
     while(kw != null) {
       selector.append(kw);
       acceptWhiteSpace();
-      var arg = acceptPostfix();
+      var arg = acceptGeneric(operators.length-1);
       args.add(arg);
       acceptWhiteSpace();
       kw = acceptKeyword();
