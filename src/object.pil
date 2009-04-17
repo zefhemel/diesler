@@ -83,6 +83,25 @@ class diesler::DSLObject {
   }
 }
 
+class diesler::DSLNull extends DSLObject {
+  new(Scope scope) extends super(scope["Object"].as<DSLClass>) {
+  }
+
+  Bool ==(Object o) {
+    if(o == null) {
+      return false;
+    }
+    if(o isa DSLNull) {
+      return true;
+    }
+    return false;
+  }
+
+  as<String> {
+    return "null";
+  }
+}
+
 class diesler::DSLClass extends DSLObject {
   DSLClass superClass = null;
   String name = null;

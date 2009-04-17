@@ -322,7 +322,7 @@ class diesler::builtin::object::TryCatchMethod extends DSLMethod {
       Scope catchScope = new Scope(scope, o);
       catchBlock.invoke(catchScope, o, new Array<DSLObject>(e.obj));
     }
-    return null;
+    return new DSLNull(scope);
   }
 }
 

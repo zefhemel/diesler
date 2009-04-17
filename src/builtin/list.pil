@@ -121,7 +121,7 @@ class diesler::builtin::list::EachMethod extends DSLMethod {
     for(DSLObject obj : o.as<DSLList>.items) {
       m.invoke(scope, scope.self, new Array<DSLObject>(obj));
     }
-    return null;
+    return new DSLNull(scope);
   }
 }
 

@@ -92,6 +92,8 @@ class diesler::Parser {
         return new ASTBool(scope, true);
       } else if(v == "false") {
         return new ASTBool(scope, false);
+      } else if(v == "null") {
+        return new ASTNull(scope);
       } else {
         i = oldI;
       }

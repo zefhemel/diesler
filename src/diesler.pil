@@ -15,7 +15,6 @@ void main(Array<String> args) {
     var content = file.readAll();
     file.close();
     var parsed = new Parser(rootScope, content).acceptStatements();
-    //new Scope(new DSLObject(diesler::rootNamespace["Object"])).evalBlock(parsed);
     parsed.eval(new Scope(rootScope, new DSLObject(rootScope["Object"].as<DSLClass>)));
   } else {
     println("Welcome to diesler, type :q to quit.");
@@ -30,7 +29,7 @@ void main(Array<String> args) {
         }
         try {
           var result = block.eval(scope);
-          if(result != null) {
+          if(!(result isa DSLNull)) {
             if(result.getMethod("asString") != null) {
               println("Result: " + result.getMethod("asString").invoke(scope, result, new Array<DSLObject>()).as<String>);
             } else {

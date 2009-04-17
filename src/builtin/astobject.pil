@@ -80,6 +80,9 @@ void diesler::builtin::ast::init(Scope scope) {
   addProperty(scope, cls, "idn");
   scope.setLocal(cls.name, cls);
 
+  cls = new DSLClass(scope, node, "ASTNull");
+  scope.setLocal(cls.name, cls);
+
   cls = new DSLClass(scope, node, "ASTFieldName");
   addProperty(scope, cls, "fieldName");
   scope.setLocal(cls.name, cls);

@@ -292,6 +292,15 @@ class diesler::ASTIdn extends diesler::ASTNode {
   }
 }
 
+class diesler::ASTNull extends diesler::ASTNode {
+  new(Scope scope) extends super(scope["ASTNull"]) {
+  }
+
+  String toIndentedString(Int depth) {
+    return "null";
+  }
+}
+
 class diesler::ASTFieldName extends diesler::ASTNode {
   String fieldName = null;
 
