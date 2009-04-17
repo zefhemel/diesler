@@ -28,12 +28,12 @@ class diesler::DSLInt extends DSLObject {
 
 DSLClass diesler::builtin::int::init(Scope scope) {
   var int = new DSLClass(scope, scope["Object"].as<DSLClass>, "Int");
-  int.instanceMethods["+"] = new diesler::builtin::int::AddMethod(scope);
-  int.instanceMethods["-"] = new diesler::builtin::int::SubstractMethod(scope);
-  int.instanceMethods["*"] = new diesler::builtin::int::MultiplyMethod(scope);
+  int.setInstanceMethod("+", new diesler::builtin::int::AddMethod(scope));
+  int.setInstanceMethod("-", new diesler::builtin::int::SubstractMethod(scope));
+  int.setInstanceMethod("*", new diesler::builtin::int::MultiplyMethod(scope));
 
-  int.instanceMethods["<"] = new diesler::builtin::int::LessThanMethod(scope);
-  int.instanceMethods[">"] = new diesler::builtin::int::GreaterThanMethod(scope);
+  int.setInstanceMethod("<", new diesler::builtin::int::LessThanMethod(scope));
+  int.setInstanceMethod(">", new diesler::builtin::int::GreaterThanMethod(scope));
   return int;
 }
 

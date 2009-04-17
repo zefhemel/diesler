@@ -6,9 +6,9 @@ import diesler::exception
 
 DSLClass diesler::builtin::method::init(Scope scope) {
   var method = new DSLClass(scope, scope["Object"].as<DSLClass>, "Method");
-  method.instanceMethods["invoke:on:"] = new diesler::builtin::method::InvokeOnMethod(scope);
-  method.instanceMethods["invoke:"] = new diesler::builtin::method::InvokeWithArgsMethod(scope);
-  method.instanceMethods["invoke"] = new diesler::builtin::method::InvokeMethod(scope);
+  method.setInstanceMethod("invoke:on:", new diesler::builtin::method::InvokeOnMethod(scope));
+  method.setInstanceMethod("invoke:", new diesler::builtin::method::InvokeWithArgsMethod(scope));
+  method.setInstanceMethod("invoke", new diesler::builtin::method::InvokeMethod(scope));
   addProperty(scope, method, "selector");
   addProperty(scope, method, "block");
   return method;

@@ -28,7 +28,7 @@ class diesler::DSLString extends DSLObject {
 
 DSLClass diesler::builtin::string::init(Scope scope) {
   var string = new DSLClass(scope, scope["Object"].as<DSLClass>, "String");
-  string.instanceMethods["+"] = new diesler::builtin::string::StringConcatMethod(scope);
+  string.setInstanceMethod("+", new diesler::builtin::string::StringConcatMethod(scope));
   return string;
 }
 

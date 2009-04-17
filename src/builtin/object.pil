@@ -9,37 +9,37 @@ import diesler::exception
 DSLClass diesler::builtin::object::init(Scope scope) {
   var object = new DSLClass(scope, null, "Object");
 
-  object.methods["new"] = new diesler::builtin::object::NewInstanceMethod(scope);
-  object.methods["defineInstance:"] = new diesler::builtin::object::DefineMethods(scope, true);
-  object.methods["define:"] = new diesler::builtin::object::DefineMethods(scope, false);
-  object.methods["subClass:with:"] = new diesler::builtin::object::SubclassMethod(scope);
-  object.methods["importNativeClass:"] = new diesler::builtin::native::NewNativeClassMethod(scope);
-  object.methods["methods"] = new diesler::builtin::object::MethodsMethod(scope);
-  object.methods["instanceMethods"] = new diesler::builtin::object::InstanceMethodsMethod(scope);
-  object.methods["allMethods"] = new diesler::builtin::object::AllMethodsMethod(scope);
-  object.methods["allInstanceMethods"] = new diesler::builtin::object::AllInstanceMethodsMethod(scope);
+  object.setMethod("new", new diesler::builtin::object::NewInstanceMethod(scope));
+  object.setMethod("defineInstance:", new diesler::builtin::object::DefineMethods(scope, true));
+  object.setMethod("define:",  new diesler::builtin::object::DefineMethods(scope, false));
+  object.setMethod("subClass:with:",  new diesler::builtin::object::SubclassMethod(scope));
+  object.setMethod("importNativeClass:",  new diesler::builtin::native::NewNativeClassMethod(scope));
+  object.setMethod("methods",  new diesler::builtin::object::MethodsMethod(scope));
+  object.setMethod("instanceMethods",  new diesler::builtin::object::InstanceMethodsMethod(scope));
+  object.setMethod("allMethods",  new diesler::builtin::object::AllMethodsMethod(scope));
+  object.setMethod("allInstanceMethods",  new diesler::builtin::object::AllInstanceMethodsMethod(scope));
 
-  object.instanceMethods["isA:"] = new diesler::builtin::object::IsAMethod(scope);
-  object.instanceMethods["import:"] = new diesler::builtin::object::ImportMethod(scope);
+  object.setInstanceMethod("isA:", new diesler::builtin::object::IsAMethod(scope));
+  object.setInstanceMethod("import:", new diesler::builtin::object::ImportMethod(scope));
 
-  object.instanceMethods["=="] = new diesler::builtin::object::EqMethod(scope);
-  object.instanceMethods["!="] = new diesler::builtin::object::NotEqMethod(scope);
+  object.setInstanceMethod("==", new diesler::builtin::object::EqMethod(scope));
+  object.setInstanceMethod("!=", new diesler::builtin::object::NotEqMethod(scope));
 
-  object.instanceMethods["set:to:"] = new diesler::builtin::object::SetFieldMethod(scope);
-  object.instanceMethods["get:"] = new diesler::builtin::object::GetFieldMethod(scope);
-  object.instanceMethods["asString"] = new diesler::builtin::object::AsStringMethod(scope);
-  object.instanceMethods["define:"] = new diesler::builtin::object::DefineMethods(scope, false);
-  object.instanceMethods["methods"] = new diesler::builtin::object::MethodsMethod(scope);
-  object.instanceMethods["allMethods"] = new diesler::builtin::object::AllMethodsMethod(scope);
-  object.instanceMethods["getMethod:"] = new diesler::builtin::object::GetMethodMethod(scope);
+  object.setInstanceMethod("set:to:", new diesler::builtin::object::SetFieldMethod(scope));
+  object.setInstanceMethod("get:", new diesler::builtin::object::GetFieldMethod(scope));
+  object.setInstanceMethod("asString", new diesler::builtin::object::AsStringMethod(scope));
+  object.setInstanceMethod("define:", new diesler::builtin::object::DefineMethods(scope, false));
+  object.setInstanceMethod("methods", new diesler::builtin::object::MethodsMethod(scope));
+  object.setInstanceMethod("allMethods", new diesler::builtin::object::AllMethodsMethod(scope));
+  object.setInstanceMethod("getMethod:", new diesler::builtin::object::GetMethodMethod(scope));
 
-  object.instanceMethods["print:"] = new diesler::builtin::object::PrintMethod(scope);
-  object.instanceMethods["if:then:"] = new diesler::builtin::object::IfThenMethod(scope);
-  object.instanceMethods["if:then:else:"] = new diesler::builtin::object::IfThenElseMethod(scope);
-  object.instanceMethods["while:do:"] = new diesler::builtin::object::WhileMethod(scope);
+  object.setInstanceMethod("print:", new diesler::builtin::object::PrintMethod(scope));
+  object.setInstanceMethod("if:then:", new diesler::builtin::object::IfThenMethod(scope));
+  object.setInstanceMethod("if:then:else:", new diesler::builtin::object::IfThenElseMethod(scope));
+  object.setInstanceMethod("while:do:", new diesler::builtin::object::WhileMethod(scope));
 
-  object.instanceMethods["try:catch:"] = new diesler::builtin::object::TryCatchMethod(scope);
-  object.instanceMethods["raise:"] = new diesler::builtin::object::RaiseExceptionMethod(scope);
+  object.setInstanceMethod("try:catch:", new diesler::builtin::object::TryCatchMethod(scope));
+  object.setInstanceMethod("raise:", new diesler::builtin::object::RaiseExceptionMethod(scope));
   return object;
 }
 
@@ -94,8 +94,10 @@ class diesler::builtin::object::InstanceMethodsMethod extends DSLMethod {
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
     var l = new List<DSLObject>();
     var c = o.as<DSLClass>;
-    for(String methodName : c.instanceMethods.keys) {
-      l.add(c.instanceMethods[methodName]);
+    if(c.instanceMethods != null) {
+      for(String methodName : c.instanceMethods.keys) {
+        l.add(c.instanceMethods[methodName]);
+      }
     }
     return new DSLList(scope, l);
   }
@@ -107,8 +109,10 @@ class diesler::builtin::object::MethodsMethod extends DSLMethod {
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
     var l = new List<DSLObject>();
-    for(String methodName : o.methods.keys) {
-      l.add(o.methods[methodName]);
+    if(o.methods != null) {
+      for(String methodName : o.methods.keys) {
+        l.add(o.methods[methodName]);
+      }
     }
     if(!(o isa DSLClass) && o.cls != null) {
       DSLList classMethods = o.cls.getMethod("instanceMethods").invoke(scope, o.cls, args).as<DSLList>;
@@ -126,11 +130,13 @@ class diesler::builtin::object::AllInstanceMethodsMethod extends DSLMethod {
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
     var l = new List<DSLObject>();
     var c = o.as<DSLClass>;
-    for(String methodName : c.instanceMethods.keys) {
-      l.add(c.instanceMethods[methodName]);
+    if(c.instanceMethods != null) {
+      for(String methodName : c.instanceMethods.keys) {
+        l.add(c.instanceMethods[methodName]);
+      }
     }
     if(c.superClass != null) {
-      DSLList superMethods = c.superClass.methods["allInstanceMethods"].invoke(scope, c.superClass, args).as<DSLList>;
+      DSLList superMethods = c.superClass.getMethod("allInstanceMethods").invoke(scope, c.superClass, args).as<DSLList>;
       for(DSLMethod m : superMethods.items) {
         l.add(m);
       }
@@ -145,8 +151,10 @@ class diesler::builtin::object::AllMethodsMethod extends DSLMethod {
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
     var l = new List<DSLObject>();
-    for(String methodName : o.methods.keys) {
-      l.add(o.methods[methodName]);
+    if(o.methods != null) {
+      for(String methodName : o.methods.keys) {
+        l.add(o.methods[methodName]);
+      }
     }
     if(o.cls != null) {
       DSLList classMethods = o.cls.getMethod("allInstanceMethods").invoke(scope, o.cls, args).as<DSLList>;
@@ -189,9 +197,9 @@ class diesler::builtin::object::DefineMethods extends DSLMethod {
     for(ASTMethodDef mdt : defs.declaredMethods) {
       var newMethod = new DSLMethod(scope, mdt.signature.selector, mdt.signature.arguments, new ASTBlock(scope, mdt.signature.arguments, mdt.statements));
       if(self isa DSLClass && instanceMethods) {
-        self.as<DSLClass>.instanceMethods[mdt.signature.selector] = newMethod;
+        self.as<DSLClass>.setInstanceMethod(mdt.signature.selector, newMethod);
       } else {
-        self.methods[mdt.signature.selector] = newMethod;
+        self.setMethod(mdt.signature.selector, newMethod);
       }
     }
     return self;
@@ -208,7 +216,7 @@ class diesler::builtin::object::SubclassMethod extends DSLMethod {
     var cls = new DSLClass(scope, self.as<DSLClass>, className);
     for(ASTMethodDef mdt : definitions.declaredMethods) {
       var newMethod = new DSLMethod(scope, mdt.signature.selector, mdt.signature.arguments, new ASTBlock(scope, mdt.signature.arguments, mdt.statements));
-      cls.instanceMethods[mdt.signature.selector] = newMethod;
+      cls.setInstanceMethod(mdt.signature.selector, newMethod);
     }
     return cls;
   }

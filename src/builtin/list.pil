@@ -25,16 +25,16 @@ class diesler::DSLList extends DSLObject {
 
 DSLClass diesler::builtin::list::init(Scope scope) {
   var list = new DSLClass(scope, scope["Object"].as<DSLClass>, "List");
-  list.instanceMethods["add:"] = new diesler::builtin::list::AddMethod(scope);
-  list.instanceMethods["add:at:"] = new diesler::builtin::list::AddAtMethod(scope);
-  list.instanceMethods["remove:"] = new diesler::builtin::list::RemoveMethod(scope);
-  list.instanceMethods["removeAt:"] = new diesler::builtin::list::RemoveAtMethod(scope);
-  list.instanceMethods["contains:"] = new diesler::builtin::list::ContainsMethod(scope);
-  list.instanceMethods["get:"] = new diesler::builtin::list::GetMethod(scope);
-  list.instanceMethods["length"] = new diesler::builtin::list::LengthMethod(scope);
-  list.instanceMethods["each:"] = new diesler::builtin::list::EachMethod(scope);
+  list.setInstanceMethod("add:", new diesler::builtin::list::AddMethod(scope));
+  list.setInstanceMethod("add:at:", new diesler::builtin::list::AddAtMethod(scope));
+  list.setInstanceMethod("remove:", new diesler::builtin::list::RemoveMethod(scope));
+  list.setInstanceMethod("removeAt:", new diesler::builtin::list::RemoveAtMethod(scope));
+  list.setInstanceMethod("contains:", new diesler::builtin::list::ContainsMethod(scope));
+  list.setInstanceMethod("get:", new diesler::builtin::list::GetMethod(scope));
+  list.setInstanceMethod("length", new diesler::builtin::list::LengthMethod(scope));
+  list.setInstanceMethod("each:", new diesler::builtin::list::EachMethod(scope));
 
-  list.instanceMethods["=="] = new diesler::builtin::list::EqualsMethod(scope);
+  list.setInstanceMethod("==", new diesler::builtin::list::EqualsMethod(scope));
   return list;
 }
 

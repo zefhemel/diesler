@@ -29,26 +29,33 @@ class diesler::exception::InvalidArgumentException extends Exception {
 
 class diesler::DSLObject {
   DSLClass cls = null;
-  Map<String, DSLMethod> methods = new Map<String, DSLMethod>();
-  Map<String, DSLObject> fields = new Map<String, DSLObject>();
+  Map<String, DSLMethod> methods = null; //new Map<String, DSLMethod>();
+  Map<String, DSLObject> fields = null; //new Map<String, DSLObject>();
 
   new(DSLClass cls) {
     this.cls = cls;
   }
 
   DSLMethod getMethod(String selector) {
-    if(methods.contains(selector)) {
+    if(methods != null && methods.contains(selector)) {
       return methods[selector];
     }
     var curCls = this.cls;
-    while(curCls != null && !curCls.instanceMethods.contains(selector)) {
+    while(curCls != null && (curCls.instanceMethods == null || !curCls.instanceMethods.contains(selector))) {
       curCls = curCls.superClass;
     }
     if(curCls == null) {
       return null;
     } else {
-      return curCls.instanceMethods[selector];
+      return curCls.getInstanceMethod(selector);
     }
+  }
+
+  void setMethod(String selector, DSLMethod method) {
+    if(methods == null) {
+      methods = new Map<String, DSLMethod>();
+    }
+    methods[selector] = method;
   }
 
   Bool isInstanceOf(DSLClass checkCls) {
@@ -63,7 +70,7 @@ class diesler::DSLObject {
   }
   
   DSLObject getField(String name) {
-    if(!fields.contains(name)) {
+    if(fields == null || !fields.contains(name)) {
       throw new NoSuchFieldException(name);
     } else {
       return fields[name];
@@ -71,6 +78,9 @@ class diesler::DSLObject {
   }
 
   void setField(String name, DSLObject value) {
+    if(fields == null) {
+      fields = new Map<String, DSLObject>();
+    }
     fields[name] = value;
   }
 
@@ -105,7 +115,7 @@ class diesler::DSLNull extends DSLObject {
 class diesler::DSLClass extends DSLObject {
   DSLClass superClass = null;
   String name = null;
-  Map<String, DSLMethod> instanceMethods = new Map<String, DSLMethod>();
+  Map<String, DSLMethod> instanceMethods = null; //new Map<String, DSLMethod>();
 
   new(Scope scope, DSLClass superClass, String name) extends super(scope["Object"].as<DSLClass>) {
     this.superClass = superClass;
@@ -114,7 +124,7 @@ class diesler::DSLClass extends DSLObject {
 
   DSLMethod getMethod(String selector) {
     var curCls = this;
-    while(curCls != null && !curCls.methods.contains(selector)) {
+    while(curCls != null && (curCls.methods == null || !curCls.methods.contains(selector))) {
       curCls = curCls.superClass;
     }
     if(curCls == null) {
@@ -122,6 +132,20 @@ class diesler::DSLClass extends DSLObject {
     } else {
       return curCls.methods[selector];
     }
+  }
+
+  DSLMethod getInstanceMethod(String selector) {
+    if(instanceMethods == null) {
+      return null;
+    }
+    return instanceMethods[selector];
+  }
+
+  void setInstanceMethod(String selector, DSLMethod m) {
+    if(instanceMethods == null) {
+      instanceMethods = new Map<String, DSLMethod>();
+    }
+    instanceMethods[selector] = m;
   }
 
   as<String> {
@@ -155,7 +179,7 @@ class diesler::DSLMethod extends DSLObject {
   DSLObject invoke(Scope scope, DSLObject self, Array<DSLObject> args) {
     Scope localScope = null;
     if(closure != null) {
-      localScope = closure.createLightSubScope(self);
+      localScope = new Scope(closure, self); //closure.createLightSubScope(self);
     } else {
       localScope = new Scope(scope, self);
     }

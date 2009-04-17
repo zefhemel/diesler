@@ -20,10 +20,10 @@ public class NewNativeClassMethod extends DSLMethod {
 			boolean addedParamOption = false;
 			for(Constructor cnstr : wrappedClass.getConstructors()) {
 				if(cnstr.getParameterTypes().length == 0 && !addedNoParamOption) {
-					cls.getMethods().put("new", new NewNativeObjectMethod(scope, "new"));
+					cls.setMethod("new", new NewNativeObjectMethod(scope, "new"));
 					addedNoParamOption = true;
 				} else if(cnstr.getParameterTypes().length > 0 && !addedParamOption){
-					cls.getMethods().put("new:", new NewNativeObjectMethod(scope, "new:"));
+					cls.setMethod("new:", new NewNativeObjectMethod(scope, "new:"));
 					addedParamOption = true;
 				}
 			}

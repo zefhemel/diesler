@@ -65,6 +65,6 @@ class diesler::util::SetMethod extends DSLMethod {
 }
 
 void diesler::util::addProperty(Scope scope, DSLClass cls, String property) {
-  cls.instanceMethods[property] = new GetMethod(scope, property);
-  cls.instanceMethods["set" + capitalizeString(property)+":"] = new SetMethod(scope, property);
+  cls.setInstanceMethod(property, new GetMethod(scope, property));
+  cls.setInstanceMethod("set" + capitalizeString(property)+":", new SetMethod(scope, property));
 }
