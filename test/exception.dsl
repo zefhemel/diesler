@@ -1,5 +1,3 @@
-import: "stdlib.dsl"
-
 try: {
   raise: 10
 } catch: |e| {

@@ -1,5 +1,3 @@
-import: "stdlib.dsl"
-
 local (a(isA: String), b(isA: Int), c(isA: Int)) = ("Zef", 25, 27)
 print: (c, b, a)
 

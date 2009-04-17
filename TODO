@@ -1,5 +1,4 @@
 * super method invocation
-* Optimize number of local method, field maps and scope maps
 * Unit testing framework
 * Finish native Java import
 * Object creation similar to object pattern match syntax: User[ name = "Zef Hemel", age = 25 ]

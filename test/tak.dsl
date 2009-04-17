@@ -1,5 +1,3 @@
-import: "stdlib.dsl"
-
 @counter = 0
 
 define: methods{

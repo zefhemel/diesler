@@ -12,7 +12,7 @@ DSLClass diesler::builtin::object::init(Scope scope) {
   object.setMethod("new", new diesler::builtin::object::NewInstanceMethod(scope));
   object.setMethod("defineInstance:", new diesler::builtin::object::DefineMethods(scope, true));
   object.setMethod("define:",  new diesler::builtin::object::DefineMethods(scope, false));
-  object.setMethod("subClass:with:",  new diesler::builtin::object::SubclassMethod(scope));
+  object.setMethod("subClass:",  new diesler::builtin::object::SubclassMethod(scope));
   object.setMethod("importNativeClass:",  new diesler::builtin::native::NewNativeClassMethod(scope));
   object.setMethod("methods",  new diesler::builtin::object::MethodsMethod(scope));
   object.setMethod("instanceMethods",  new diesler::builtin::object::InstanceMethodsMethod(scope));
@@ -29,9 +29,11 @@ DSLClass diesler::builtin::object::init(Scope scope) {
   object.setInstanceMethod("get:", new diesler::builtin::object::GetFieldMethod(scope));
   object.setInstanceMethod("asString", new diesler::builtin::object::AsStringMethod(scope));
   object.setInstanceMethod("define:", new diesler::builtin::object::DefineMethods(scope, false));
+  object.setInstanceMethod("class", new diesler::builtin::object::ClassMethod(scope));
   object.setInstanceMethod("methods", new diesler::builtin::object::MethodsMethod(scope));
   object.setInstanceMethod("allMethods", new diesler::builtin::object::AllMethodsMethod(scope));
   object.setInstanceMethod("getMethod:", new diesler::builtin::object::GetMethodMethod(scope));
+  object.setInstanceMethod("setMethod:to:", new diesler::builtin::object::SetMethodMethod(scope));
 
   object.setInstanceMethod("print:", new diesler::builtin::object::PrintMethod(scope));
   object.setInstanceMethod("if:then:", new diesler::builtin::object::IfThenMethod(scope));
@@ -103,6 +105,15 @@ class diesler::builtin::object::InstanceMethodsMethod extends DSLMethod {
   }
 }
 
+class diesler::builtin::object::ClassMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "class", new List<ASTPattern>(), null) {
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    return o.cls;
+  }
+}
+
 class diesler::builtin::object::MethodsMethod extends DSLMethod {
   new(Scope scope) extends super(scope, "methods", new List<ASTPattern>(), null) {
   }
@@ -123,6 +134,7 @@ class diesler::builtin::object::MethodsMethod extends DSLMethod {
     return new DSLList(scope, l);
   }
 }
+
 class diesler::builtin::object::AllInstanceMethodsMethod extends DSLMethod {
   new(Scope scope) extends super(scope, "instanceMethods", new List<ASTPattern>(), null) {
   }
@@ -175,6 +187,16 @@ class diesler::builtin::object::GetMethodMethod extends DSLMethod {
   }
 }
 
+class diesler::builtin::object::SetMethodMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "setMethod:to:", new List<ASTPattern>(new ASTIdnPattern(scope, "selector")), null) {
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    o.setMethod(args[0].as<DSLString>.value, args[1].as<DSLMethod>);
+    return new DSLNull(scope);
+  }
+}
+
 class diesler::builtin::object::PrintMethod extends DSLMethod {
   new(Scope scope) extends super(scope, "print:", new List<ASTPattern>(new ASTIdnPattern(scope, "str")), null) {
   }
@@ -207,17 +229,12 @@ class diesler::builtin::object::DefineMethods extends DSLMethod {
 }
 
 class diesler::builtin::object::SubclassMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "subClass:with:", new List<ASTPattern>(new ASTIdnPattern(scope, "className"), new ASTIdnPattern(scope, "methods")), null) {
+  new(Scope scope) extends super(scope, "subClass:", new List<ASTPattern>(new ASTIdnPattern(scope, "className")), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject self, Array<DSLObject> args) {
     var className = args[0].as<DSLString>.value;
-    var definitions = args[1].as<DSLMethodDefs>; 
     var cls = new DSLClass(scope, self.as<DSLClass>, className);
-    for(ASTMethodDef mdt : definitions.declaredMethods) {
-      var newMethod = new DSLMethod(scope, mdt.signature.selector, mdt.signature.arguments, new ASTBlock(scope, mdt.signature.arguments, mdt.statements));
-      cls.setInstanceMethod(mdt.signature.selector, newMethod);
-    }
     return cls;
   }
 }

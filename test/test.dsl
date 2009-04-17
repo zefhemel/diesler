@@ -1,5 +1,3 @@
-import: "stdlib.dsl"
-
 local log = Logger new
 log debug: "Testing"
 log level: 2

@@ -14,30 +14,42 @@ void main(Array<String> args) {
     var file = new pil::io::ReadFile(args[0]);
     var content = file.readAll();
     file.close();
+
+    var obj = new DSLObject(rootScope["Object"].as<DSLClass>);
+    obj.getMethod("import:").invoke(rootScope, obj, new Array<DSLObject>(new DSLString(rootScope, "stdlib.dsl")));
     var parsed = new Parser(rootScope, content).acceptStatements();
-    parsed.eval(new Scope(rootScope, new DSLObject(rootScope["Object"].as<DSLClass>)));
+    parsed.eval(new Scope(rootScope, obj));
   } else {
     println("Welcome to diesler, type :q to quit.");
-    var scope = new Scope(rootScope, new DSLObject(rootScope["Object"].as<DSLClass>));
+    var obj = new DSLObject(rootScope["Object"].as<DSLClass>);
+    obj.getMethod("import:").invoke(rootScope, obj, new Array<DSLObject>(new DSLString(rootScope, "stdlib.dsl")));
+    var scope = new Scope(rootScope, obj);
     while(input != ":q") {
       print("> ");
       input = readln();
       if(input != ":q") {
-        var block = new Parser(rootScope, input).acceptStatements();
+        ASTNode block = null;
+        try {
+          block = new Parser(rootScope, input).acceptStatements();
+        } catch(ParseException pe) {
+          println(pe);
+          block = null;
+        }
         if(block == null) {
           println("Could not parse.");
-        }
-        try {
-          var result = block.eval(scope);
-          if(!(result isa DSLNull)) {
-            if(result.getMethod("asString") != null) {
-              println("Result: " + result.getMethod("asString").invoke(scope, result, new Array<DSLObject>()).as<String>);
-            } else {
-              println("Result: " + result.as<String>);
+        } else {
+          try {
+            var result = block.eval(scope);
+            if(!(result isa DSLNull)) {
+              if(result.getMethod("asString") != null) {
+                println("Result: " + result.getMethod("asString").invoke(scope, result, new Array<DSLObject>()).as<String>);
+              } else {
+                println("Result: " + result.as<String>);
+              }
             }
+          } catch(Exception e) {
+            println("Error: " + e.as<String>);
           }
-        } catch(Exception e) {
-          println("Error: " + e.as<String>);
         }
       }
     }
