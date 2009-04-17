@@ -1,0 +1,125 @@
+import "object.pil"
+import "objectutils.pil"
+
+import diesler
+import diesler::util
+import diesler::builtin::ast
+import pil::reflect
+
+
+void diesler::builtin::ast::init(Scope scope) {
+  var node = new DSLClass(scope, scope["Object"].as<DSLClass>, "ASTNode");
+  scope.setLocal("ASTNode", node);
+
+  DSLClass cls = null;
+  cls = new DSLClass(scope, node, "ASTMessageSend");
+  addProperty(scope, cls, "object");
+  addProperty(scope, cls, "selector");
+  addProperty(scope, cls, "arguments");
+  scope.setLocal(cls.name, cls);
+
+  cls = new DSLClass(scope, node, "ASTBlock");
+  addProperty(scope, cls, "arguments");
+  addProperty(scope, cls, "statements");
+  scope.setLocal(cls.name, cls);
+
+  cls = new DSLClass(scope, node, "ASTDeclBlock");
+  addProperty(scope, cls, "declaredMethods");
+  scope.setLocal(cls.name, cls);
+
+  cls = new DSLClass(scope, node, "ASTPatternBlock");
+  addProperty(scope, cls, "patternCases");
+  scope.setLocal(cls.name, cls);
+
+  cls = new DSLClass(scope, node, "ASTPatternCase");
+  addProperty(scope, cls, "match");
+  addProperty(scope, cls, "block");
+  scope.setLocal(cls.name, cls);
+
+  cls = new DSLClass(scope, node, "ASTMethodDef");
+  addProperty(scope, cls, "signature");
+  addProperty(scope, cls, "statements");
+  scope.setLocal(cls.name, cls);
+
+  cls = new DSLClass(scope, node, "ASTMethodSignature");
+  addProperty(scope, cls, "selector");
+  addProperty(scope, cls, "arguments");
+  scope.setLocal(cls.name, cls);
+
+  cls = new DSLClass(scope, node, "ASTReturn");
+  addProperty(scope, cls, "value");
+  scope.setLocal(cls.name, cls);
+
+  cls = new DSLClass(scope, node, "ASTAssign");
+  addProperty(scope, cls, "lhs");
+  addProperty(scope, cls, "value");
+  scope.setLocal(cls.name, cls);
+
+  cls = new DSLClass(scope, node, "ASTLocalAssign");
+  addProperty(scope, cls, "lhs");
+  addProperty(scope, cls, "value");
+  scope.setLocal(cls.name, cls);
+
+  cls = new DSLClass(scope, node, "ASTList");
+  addProperty(scope, cls, "values");
+  scope.setLocal(cls.name, cls);
+
+  cls = new DSLClass(scope, node, "ASTInt");
+  addProperty(scope, cls, "value");
+  scope.setLocal(cls.name, cls);
+
+  cls = new DSLClass(scope, node, "ASTBool");
+  addProperty(scope, cls, "value");
+  scope.setLocal(cls.name, cls);
+
+  cls = new DSLClass(scope, node, "ASTString");
+  addProperty(scope, cls, "value");
+  scope.setLocal(cls.name, cls);
+
+  cls = new DSLClass(scope, node, "ASTIdn");
+  addProperty(scope, cls, "idn");
+  scope.setLocal(cls.name, cls);
+
+  cls = new DSLClass(scope, node, "ASTFieldName");
+  addProperty(scope, cls, "fieldName");
+  scope.setLocal(cls.name, cls);
+}
+
+void diesler::builtin::ast::initPatterns(Scope scope) {
+  var pattern = new DSLClass(scope, scope["ASTNode"].as<DSLClass>, "ASTNode");
+  addProperty(scope, pattern, "condition");
+  scope.setLocal("ASTPattern", pattern);
+
+  DSLClass cls = null;
+  cls = new DSLClass(scope, pattern, "ASTBindPattern");
+  addProperty(scope, cls, "idn");
+  addProperty(scope, cls, "pattern");
+  scope.setLocal(cls.name, cls);
+
+  cls = new DSLClass(scope, pattern, "ASTIdnPattern");
+  addProperty(scope, cls, "idn");
+  scope.setLocal(cls.name, cls);
+
+  cls = new DSLClass(scope, pattern, "ASTFieldNamePattern");
+  addProperty(scope, cls, "fieldName");
+  scope.setLocal(cls.name, cls);
+
+  cls = new DSLClass(scope, pattern, "ASTListPattern");
+  addProperty(scope, cls, "items");
+  scope.setLocal(cls.name, cls);
+
+  cls = new DSLClass(scope, pattern, "ASTObjectPattern");
+  addProperty(scope, cls, "classString");
+  addProperty(scope, cls, "properties");
+  scope.setLocal(cls.name, cls);
+
+  cls = new DSLClass(scope, pattern, "ASTPropertyPattern");
+  addProperty(scope, cls, "property");
+  addProperty(scope, cls, "pattern");
+  scope.setLocal(cls.name, cls);
+
+  cls = new DSLClass(scope, pattern, "ASTLiteralPattern");
+  addProperty(scope, cls, "value");
+  scope.setLocal(cls.name, cls);
+}
+

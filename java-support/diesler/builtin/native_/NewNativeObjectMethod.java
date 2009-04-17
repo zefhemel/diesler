@@ -4,7 +4,7 @@ import diesler.*;
 
 public class NewNativeObjectMethod extends DSLMethod {
 	public NewNativeObjectMethod(diesler.Scope scope, String selector) {
-		super(scope, selector, new ASTPattern[] { new ASTIdnPattern(scope, "whatever") }, null);
+		super(scope, selector, pil.Utils.fromArrayToList(new ASTPattern[] { new ASTIdnPattern(scope, "whatever") }), null);
 	}
 
 	@Override

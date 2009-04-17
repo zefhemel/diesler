@@ -7,6 +7,7 @@ import "builtin/list.pil"
 import "builtin/bool.pil"
 import "builtin/native.pil"
 import "builtin/method.pil"
+import "builtin/astobject.pil"
 
 import diesler
 import diesler::exception
@@ -18,6 +19,8 @@ void diesler::initInterpreter(Scope scope) {
   scope.setLocal("Int", diesler::builtin::int::init(scope));
   scope.setLocal("Bool", diesler::builtin::bool::init(scope));
   scope.setLocal("List", diesler::builtin::list::init(scope));
+  diesler::builtin::ast::init(scope);
+  diesler::builtin::ast::initPatterns(scope);
 }
 
 class diesler::Scope {

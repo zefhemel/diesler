@@ -1,9 +1,7 @@
-* Fix return: (maybe make keyword instead?)
+* null value
 * super method invocation
 * Unit testing framework
-* Method reflection, getting, setting
 * Finish native Java import
 * Object creation similar to object pattern match syntax: User[ name = "Zef Hemel", age = 25 ]
-* Make AST classes accessible from within the language
 * Improve parser
 * Primitives: character, floating points, better strings

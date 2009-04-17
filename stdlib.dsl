@@ -24,11 +24,7 @@ Logger = Object subClass: "Logger" with: methods{
 
 Object defineInstance: methods{
   not: e {
-    if: [ e == true ] then: {
-      return: false
-    } else: {
-      return: true
-    }
+    e != true
   }
 
   match: e against: cs {
@@ -40,27 +36,24 @@ Bool defineInstance: methods{
   && other {
     if: [ self == true ] then: {
       if: [ other == true ] then: {
-        return: true
-      } else: {
-        return: false
+        return true
       }
-    } else: {
-      return: false
     }
+    return false
   }
 
   || other {
     if: [ self == true ] then: {
       if: [ other == true ] then: {
-        return: true
+        return true
       } else: {
-        return: true
+        return true
       }
     } else: {
       if: [ other == true ] then: {
-        return: true
+        return true
       } else: {
-        return: false
+        return false
       }
     }
   }
@@ -68,11 +61,11 @@ Bool defineInstance: methods{
 
 Int defineInstance: methods{
   <= other {
-    return: self < other || self == other
+    return self < other || self == other
   }
 
   >= other {
-    return: self > other || self == other
+    return self > other || self == other
   }
 }
 
@@ -87,7 +80,7 @@ Set = Object subClass: "Set" with: methods{
     if: [ not: (@list contains: e) ] then: {
       @list add: e
     } 
-    return: @list
+    return @list
   }
 
   describe {
@@ -103,7 +96,7 @@ List defineInstance: methods{
       l add: (get: c)
       c = c - 1
     }
-    return: l
+    return l
   }
 
   reverseEach: m {
@@ -112,7 +105,7 @@ List defineInstance: methods{
 
   addAll: l {
     l each: |e| { add: e }
-    return: self
+    return self
   }
 }
 
@@ -124,6 +117,6 @@ List define: methods{
       l add: c
       c = c + 1
     }
-    return: l
+    return l
   }
 }

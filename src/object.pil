@@ -115,12 +115,12 @@ class diesler::DSLClass extends DSLObject {
 }
 
 class diesler::DSLMethod extends DSLObject {
-  Array<ASTPattern> argumentPatterns = null;
+  List<ASTPattern> argumentPatterns = null;
   ASTBlock block = null;
   String selector = null;
   Scope closure = null;
 
-  new(Scope scope, String selector, Array<ASTPattern> argumentPatterns, ASTBlock block) extends super(scope["Method"].as<DSLClass>){
+  new(Scope scope, String selector, List<ASTPattern> argumentPatterns, ASTBlock block) extends super(scope["Method"].as<DSLClass>){
     this.argumentPatterns = argumentPatterns;
     this.block = block;
     this.selector = selector;
@@ -148,8 +148,10 @@ class diesler::DSLMethod extends DSLObject {
     }
     DSLObject rv = block.eval(localScope);
     if(closure != null) { // embedded block, so set parent return value to local scope
-      scope.hasReturned = localScope.hasReturned;
-      scope.returnValue = localScope.returnValue;
+      //scope.hasReturned = localScope.hasReturned;
+      //scope.returnValue = localScope.returnValue;
+      closure.hasReturned = localScope.hasReturned;
+      closure.returnValue = localScope.returnValue;
     }
     if(localScope.hasReturned) {
       return localScope.returnValue;
@@ -164,9 +166,9 @@ class diesler::DSLMethod extends DSLObject {
 }
 
 class diesler::DSLMethodDefs extends DSLObject {
-  Array<ASTMethodDef> declaredMethods = null;
+  List<ASTMethodDef> declaredMethods = null;
 
-  new(Scope scope, Array<ASTMethodDef> declaredMethods) extends super(scope["MethodDefs"].as<DSLClass>){
+  new(Scope scope, List<ASTMethodDef> declaredMethods) extends super(scope["MethodDefs"].as<DSLClass>){
     this.declaredMethods = declaredMethods;
   }
 
@@ -176,9 +178,9 @@ class diesler::DSLMethodDefs extends DSLObject {
 }
 
 class diesler::DSLPatternMethod extends DSLMethod {
-  Array<ASTPatternCase> patternCases = null;
+  List<ASTPatternCase> patternCases = null;
 
-  new(Scope scope, Array<ASTPatternCase> patternCases) extends super(scope, "matchMethod:", new Array<ASTPattern>(new ASTIdnPattern(scope, "exp")), null) {
+  new(Scope scope, List<ASTPatternCase> patternCases) extends super(scope, "matchMethod:", new List<ASTPattern>(new ASTIdnPattern(scope, "exp")), null) {
     this.patternCases = patternCases;
   }
 

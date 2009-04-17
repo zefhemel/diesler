@@ -31,8 +31,8 @@ void main(Array<String> args) {
         try {
           var result = block.eval(scope);
           if(result != null) {
-            if(result.getMethod("describe") != null) {
-              println("Result: " + result.getMethod("describe").invoke(scope, result, new Array<DSLObject>()).as<String>);
+            if(result.getMethod("asString") != null) {
+              println("Result: " + result.getMethod("asString").invoke(scope, result, new Array<DSLObject>()).as<String>);
             } else {
               println("Result: " + result.as<String>);
             }

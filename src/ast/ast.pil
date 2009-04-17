@@ -1,12 +1,12 @@
 import "interpreter.pil"
 import "builtin/list.pil"
 import "ast/match.pil"
+import "utils.pil"
 
 import diesler
 import diesler::util
 
 include "eval.pil"
-include "ast/astpretty.pil"
 
 class diesler::ASTNode extends DSLObject {
   new(DSLObject instanceOf) extends super(instanceOf.as<DSLClass>) {
@@ -18,43 +18,92 @@ class diesler::ASTNode extends DSLObject {
   DSLObject evalExp(Scope scope) {
     return eval(scope);
   }
+
+  String toIndentedString(Int depth) {
+    return "unkown";
+  }
+
+  as<String> {
+    return toIndentedString(0);
+  }
 }
 
 class diesler::ASTMessageSend extends diesler::ASTNode {
   ASTNode object = null;
   String selector = null;
-  Array<ASTNode> arguments = null;
+  List<ASTNode> arguments = null;
 
-  new(Scope scope, ASTNode object, String selector, Array<ASTNode> arguments) extends super(scope["ASTMessageSend"]) {
+  new(Scope scope, ASTNode object, String selector, List<ASTNode> arguments) extends super(scope["ASTMessageSend"]) {
     this.object = object;
     this.selector = selector;
     this.arguments = arguments;
   }
+
+  String toIndentedString(Int depth) {
+    var s = new MutableString();
+    s.append(object.as<String>);
+    s.append(' ');
+    var selectorParts = splitWithSeparator(':', selector);
+    for(Int i = 0; i < selectorParts.length; i++) {
+      s.append(selectorParts[i] + " " + arguments[i].as<String> + " ");
+    }
+    return s.as<String>;
+  }
 }
 
 class diesler::ASTBlock extends diesler::ASTNode {
-  Array<ASTPattern> arguments = null;
-  Array<ASTNode> statements = null;
+  List<ASTPattern> arguments = null;
+  List<ASTNode> statements = null;
 
-  new(Scope scope, Array<ASTPattern> arguments, Array<ASTNode> statements) extends super(scope["ASTBlock"]) {
+  new(Scope scope, List<ASTPattern> arguments, List<ASTNode> statements) extends super(scope["ASTBlock"]) {
     this.arguments = arguments;
     this.statements = statements;
+  }
+
+  String toIndentedString(Int depth) {
+    var s = new MutableString();
+    s.append("{\n");
+    for(ASTNode statement : statements) {
+      s.append(spaces(depth+1) + statement.toIndentedString(depth+1) + "\n");
+    }
+    s.append(spaces(depth) + "}");
+    return s.as<String>;
   }
 }
 
 class diesler::ASTDeclBlock extends diesler::ASTNode {
-  Array<ASTMethodDef> declaredMethods = null;
+  List<ASTMethodDef> declaredMethods = null;
 
-  new(Scope scope, Array<ASTMethodDef> declaredMethods) extends super(scope["ASTDeclBlock"]) {
+  new(Scope scope, List<ASTMethodDef> declaredMethods) extends super(scope["ASTDeclBlock"]) {
     this.declaredMethods = declaredMethods;
+  }
+
+  String toIndentedString(Int depth) {
+    var s = new MutableString();
+    s.append("methods{\n");
+    for(ASTMethodDef method : declaredMethods) {
+      s.append(spaces(depth+1) + method.toIndentedString(depth+1) + "\n");
+    }
+    s.append(spaces(depth) + "}");
+    return s.as<String>;
   }
 }
 
 class diesler::ASTPatternBlock extends diesler::ASTNode {
-  Array<ASTPatternCase> patternCases = null;
+  List<ASTPatternCase> patternCases = null;
 
-  new(Scope scope, Array<ASTPatternCase> patternCases) extends super(scope["ASTPatternBlock"]) {
+  new(Scope scope, List<ASTPatternCase> patternCases) extends super(scope["ASTPatternBlock"]) {
     this.patternCases = patternCases;
+  }
+
+  String toIndentedString(Int depth) {
+    var s = new MutableString();
+    s.append("cases{\n");
+    for(ASTPatternCase cs : patternCases) {
+      s.append(spaces(depth+1) + cs.toIndentedString(depth+1) + "\n");
+    }
+    s.append(spaces(depth) + "}");
+    return s.as<String>;
   }
 }
 
@@ -66,25 +115,49 @@ class diesler::ASTPatternCase extends diesler::ASTNode {
     this.match = match;
     this.block = block;
   }
+
+  String toIndentedString(Int depth) {
+    return match.as<String> + " " + block.toIndentedString(depth+1);
+  }
 }
 
 class diesler::ASTMethodDef extends diesler::ASTNode {
   ASTMethodSignature signature = null;
-  Array<ASTNode> statements = null;
+  List<ASTNode> statements = null;
 
-  new(Scope scope, ASTMethodSignature signature, Array<ASTNode> statements) extends super(scope["ASTMethodDef"]) {
+  new(Scope scope, ASTMethodSignature signature, List<ASTNode> statements) extends super(scope["ASTMethodDef"]) {
     this.signature = signature;
     this.statements = statements;
+  }
+
+  String toIndentedString(Int depth) {
+    var s = new MutableString();
+    s.append(signature.as<String>);
+    s.append(" {\n");
+    for(ASTNode node : statements) {
+      s.append(spaces(depth+1) + node.toIndentedString(depth+1) + "\n");
+    }
+    s.append(spaces(depth) + "}\n");
+    return s.as<String>;
   }
 }
 
 class diesler::ASTMethodSignature extends diesler::ASTNode {
   String selector = null;
-  Array<ASTPattern> arguments = null;
+  List<ASTPattern> arguments = null;
 
-  new(Scope scope, String selector, Array<ASTPattern> arguments) extends super(scope["ASTMethodSignature"]) {
+  new(Scope scope, String selector, List<ASTPattern> arguments) extends super(scope["ASTMethodSignature"]) {
     this.selector = selector;
     this.arguments = arguments;
+  }
+
+  String toIndentedString(Int depth) {
+    var s = new MutableString();
+    var selectorParts = splitWithSeparator(':', selector);
+    for(Int i = 0; i < selectorParts.length; i++) {
+      s.append(selectorParts[i] + " " + arguments[i].as<String> + " ");
+    }
+    return s.as<String>;
   }
 }
 
@@ -93,6 +166,10 @@ class diesler::ASTReturn extends diesler::ASTNode {
 
   new(Scope scope, ASTNode value) extends super(scope["ASTReturn"]) {
     this.value = value;
+  }
+
+  String toIndentedString(Int depth) {
+    return "return " + value.toIndentedString(depth+1);
   }
 }
 
@@ -104,6 +181,10 @@ class diesler::ASTAssign extends diesler::ASTNode {
     this.lhs = lhs;
     this.value = value;
   }
+
+  String toIndentedString(Int depth) {
+    return lhs.as<String> + " = " + value.toIndentedString(depth+1);
+  }
 }
 
 class diesler::ASTLocalAssign extends diesler::ASTNode {
@@ -114,13 +195,30 @@ class diesler::ASTLocalAssign extends diesler::ASTNode {
     this.lhs = lhs;
     this.value = value;
   }
+
+  String toIndentedString(Int depth) {
+    return "local " + lhs.as<String> + " = " + value.toIndentedString(depth+1);
+  }
 }
 
 class diesler::ASTList extends diesler::ASTNode {
-  Array<ASTNode> values = null;
+  List<ASTNode> values = null;
 
-  new(Scope scope, Array<ASTNode> values) extends super(scope["ASTList"]) {
+  new(Scope scope, List<ASTNode> values) extends super(scope["ASTList"]) {
     this.values = values;
+  }
+
+  String toIndentedString(Int depth) {
+    var s = new MutableString();
+    s.append('(');
+    for(Int i = 0; i < values.length; i++) {
+      s.append(values[i].toIndentedString(depth+1));
+      if(i != values.length-1) {
+        s.append(", ");
+      }
+    }
+    s.append(')');
+    return s.as<String>;
   }
 }
 
@@ -141,6 +239,10 @@ class diesler::ASTInt extends diesler::ASTNode {
       return false;
     }
   }
+
+  String toIndentedString(Int depth) {
+    return value.as<String>;
+  }
 }
 
 class diesler::ASTBool extends diesler::ASTNode {
@@ -148,6 +250,10 @@ class diesler::ASTBool extends diesler::ASTNode {
 
   new(Scope scope, Bool value) extends super(scope["ASTBool"]) {
     this.value = value;
+  }
+
+  String toIndentedString(Int depth) {
+    return value.as<String>;
   }
 }
 
@@ -168,6 +274,10 @@ class diesler::ASTString extends diesler::ASTNode {
       return false;
     }
   }
+
+  String toIndentedString(Int depth) {
+    return "\"" + value + "\"";
+  }
 }
 
 class diesler::ASTIdn extends diesler::ASTNode {
@@ -176,6 +286,10 @@ class diesler::ASTIdn extends diesler::ASTNode {
   new(Scope scope, String idn) extends super(scope["ASTIdentifier"]) {
     this.idn = idn;
   }
+
+  String toIndentedString(Int depth) {
+    return idn;
+  }
 }
 
 class diesler::ASTFieldName extends diesler::ASTNode {
@@ -183,6 +297,10 @@ class diesler::ASTFieldName extends diesler::ASTNode {
 
   new(Scope scope, String fieldName) extends super(scope["ASTFieldName"]) {
     this.fieldName = fieldName;
+  }
+
+  String toIndentedString(Int depth) {
+    return "@" + fieldName;
   }
 }
 

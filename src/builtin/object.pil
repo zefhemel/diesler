@@ -16,6 +16,8 @@ DSLClass diesler::builtin::object::init(Scope scope) {
   object.methods["importNativeClass:"] = new diesler::builtin::native::NewNativeClassMethod(scope);
   object.methods["methods"] = new diesler::builtin::object::MethodsMethod(scope);
   object.methods["instanceMethods"] = new diesler::builtin::object::InstanceMethodsMethod(scope);
+  object.methods["allMethods"] = new diesler::builtin::object::AllMethodsMethod(scope);
+  object.methods["allInstanceMethods"] = new diesler::builtin::object::AllInstanceMethodsMethod(scope);
 
   object.instanceMethods["isA:"] = new diesler::builtin::object::IsAMethod(scope);
   object.instanceMethods["import:"] = new diesler::builtin::object::ImportMethod(scope);
@@ -25,9 +27,11 @@ DSLClass diesler::builtin::object::init(Scope scope) {
 
   object.instanceMethods["set:to:"] = new diesler::builtin::object::SetFieldMethod(scope);
   object.instanceMethods["get:"] = new diesler::builtin::object::GetFieldMethod(scope);
-  object.instanceMethods["describe"] = new diesler::builtin::object::DescribeMethod(scope);
+  object.instanceMethods["asString"] = new diesler::builtin::object::AsStringMethod(scope);
   object.instanceMethods["define:"] = new diesler::builtin::object::DefineMethods(scope, false);
   object.instanceMethods["methods"] = new diesler::builtin::object::MethodsMethod(scope);
+  object.instanceMethods["allMethods"] = new diesler::builtin::object::AllMethodsMethod(scope);
+  object.instanceMethods["getMethod:"] = new diesler::builtin::object::GetMethodMethod(scope);
 
   object.instanceMethods["print:"] = new diesler::builtin::object::PrintMethod(scope);
   object.instanceMethods["if:then:"] = new diesler::builtin::object::IfThenMethod(scope);
@@ -40,7 +44,7 @@ DSLClass diesler::builtin::object::init(Scope scope) {
 }
 
 class diesler::builtin::object::NewInstanceMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "new", new Array<ASTPattern>(), null) {
+  new(Scope scope) extends super(scope, "new", new List<ASTPattern>(), null) {
     this.cls = cls;
   }
 
@@ -54,7 +58,7 @@ class diesler::builtin::object::NewInstanceMethod extends DSLMethod {
 }
 
 class diesler::builtin::object::SetFieldMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "set:to:", new Array<ASTPattern>(new ASTIdnPattern(scope, "fieldName"), new ASTIdnPattern(scope, "value")), null) {
+  new(Scope scope) extends super(scope, "set:to:", new List<ASTPattern>(new ASTIdnPattern(scope, "fieldName"), new ASTIdnPattern(scope, "value")), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
@@ -65,7 +69,7 @@ class diesler::builtin::object::SetFieldMethod extends DSLMethod {
 }
 
 class diesler::builtin::object::GetFieldMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "get:", new Array<ASTPattern>(new ASTIdnPattern(scope, "fieldName")), null) {
+  new(Scope scope) extends super(scope, "get:", new List<ASTPattern>(new ASTIdnPattern(scope, "fieldName")), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
@@ -74,8 +78,8 @@ class diesler::builtin::object::GetFieldMethod extends DSLMethod {
   }
 }
 
-class diesler::builtin::object::DescribeMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "describe", new Array<ASTPattern>(), null) {
+class diesler::builtin::object::AsStringMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "asString", new List<ASTPattern>(), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
@@ -84,7 +88,39 @@ class diesler::builtin::object::DescribeMethod extends DSLMethod {
 }
 
 class diesler::builtin::object::InstanceMethodsMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "instanceMethods", new Array<ASTPattern>(), null) {
+  new(Scope scope) extends super(scope, "instanceMethods", new List<ASTPattern>(), null) {
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    var l = new List<DSLObject>();
+    var c = o.as<DSLClass>;
+    for(String methodName : c.instanceMethods.keys) {
+      l.add(c.instanceMethods[methodName]);
+    }
+    return new DSLList(scope, l);
+  }
+}
+
+class diesler::builtin::object::MethodsMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "methods", new List<ASTPattern>(), null) {
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    var l = new List<DSLObject>();
+    for(String methodName : o.methods.keys) {
+      l.add(o.methods[methodName]);
+    }
+    if(!(o isa DSLClass) && o.cls != null) {
+      DSLList classMethods = o.cls.getMethod("instanceMethods").invoke(scope, o.cls, args).as<DSLList>;
+      for(DSLMethod m : classMethods.items) {
+        l.add(m);
+      }
+    }
+    return new DSLList(scope, l);
+  }
+}
+class diesler::builtin::object::AllInstanceMethodsMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "instanceMethods", new List<ASTPattern>(), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
@@ -94,7 +130,7 @@ class diesler::builtin::object::InstanceMethodsMethod extends DSLMethod {
       l.add(c.instanceMethods[methodName]);
     }
     if(c.superClass != null) {
-      DSLList superMethods = c.superClass.methods["instanceMethods"].invoke(scope, c.superClass, args).as<DSLList>;
+      DSLList superMethods = c.superClass.methods["allInstanceMethods"].invoke(scope, c.superClass, args).as<DSLList>;
       for(DSLMethod m : superMethods.items) {
         l.add(m);
       }
@@ -103,8 +139,8 @@ class diesler::builtin::object::InstanceMethodsMethod extends DSLMethod {
   }
 }
 
-class diesler::builtin::object::MethodsMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "methods", new Array<ASTPattern>(), null) {
+class diesler::builtin::object::AllMethodsMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "methods", new List<ASTPattern>(), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
@@ -113,7 +149,7 @@ class diesler::builtin::object::MethodsMethod extends DSLMethod {
       l.add(o.methods[methodName]);
     }
     if(o.cls != null) {
-      DSLList classMethods = o.cls.getMethod("instanceMethods").invoke(scope, o.cls, args).as<DSLList>;
+      DSLList classMethods = o.cls.getMethod("allInstanceMethods").invoke(scope, o.cls, args).as<DSLList>;
       for(DSLMethod m : classMethods.items) {
         l.add(m);
       }
@@ -122,8 +158,17 @@ class diesler::builtin::object::MethodsMethod extends DSLMethod {
   }
 }
 
+class diesler::builtin::object::GetMethodMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "getMethod:", new List<ASTPattern>(new ASTIdnPattern(scope, "selector")), null) {
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    return o.getMethod(args[0].as<DSLString>.value);
+  }
+}
+
 class diesler::builtin::object::PrintMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "print:", new Array<ASTPattern>(new ASTIdnPattern(scope, "str")), null) {
+  new(Scope scope) extends super(scope, "print:", new List<ASTPattern>(new ASTIdnPattern(scope, "str")), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
@@ -135,7 +180,7 @@ class diesler::builtin::object::PrintMethod extends DSLMethod {
 class diesler::builtin::object::DefineMethods extends DSLMethod {
   Bool instanceMethods = true;
 
-  new(Scope scope, Bool instanceMethods) extends super(scope, "define:", new Array<ASTPattern>(new ASTIdnPattern(scope, "methods")), null) {
+  new(Scope scope, Bool instanceMethods) extends super(scope, "define:", new List<ASTPattern>(new ASTIdnPattern(scope, "methods")), null) {
     this.instanceMethods = instanceMethods;
   }
 
@@ -154,7 +199,7 @@ class diesler::builtin::object::DefineMethods extends DSLMethod {
 }
 
 class diesler::builtin::object::SubclassMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "subClass:with:", new Array<ASTPattern>(new ASTIdnPattern(scope, "className"), new ASTIdnPattern(scope, "methods")), null) {
+  new(Scope scope) extends super(scope, "subClass:with:", new List<ASTPattern>(new ASTIdnPattern(scope, "className"), new ASTIdnPattern(scope, "methods")), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject self, Array<DSLObject> args) {
@@ -170,7 +215,7 @@ class diesler::builtin::object::SubclassMethod extends DSLMethod {
 }
 
 class diesler::builtin::object::IsAMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "isA:", new Array<ASTPattern>(new ASTIdnPattern(scope, "class")), null) {
+  new(Scope scope) extends super(scope, "isA:", new List<ASTPattern>(new ASTIdnPattern(scope, "class")), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject self, Array<DSLObject> args) {
@@ -179,7 +224,7 @@ class diesler::builtin::object::IsAMethod extends DSLMethod {
 }
 
 class diesler::builtin::object::EqMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "==", new Array<ASTPattern>(new ASTIdnPattern(scope, "other")), null) {
+  new(Scope scope) extends super(scope, "==", new List<ASTPattern>(new ASTIdnPattern(scope, "other")), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
@@ -188,7 +233,7 @@ class diesler::builtin::object::EqMethod extends DSLMethod {
 }
 
 class diesler::builtin::object::NotEqMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "!=", new Array<ASTPattern>(new ASTIdnPattern(scope, "other")), null) {
+  new(Scope scope) extends super(scope, "!=", new List<ASTPattern>(new ASTIdnPattern(scope, "other")), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
@@ -197,7 +242,7 @@ class diesler::builtin::object::NotEqMethod extends DSLMethod {
 }
 
 class diesler::builtin::object::IfThenMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "if:then:", new Array<ASTPattern>(new ASTIdnPattern(scope, "condition"), new ASTIdnPattern(scope, "ifTrue")), null) {
+  new(Scope scope) extends super(scope, "if:then:", new List<ASTPattern>(new ASTIdnPattern(scope, "condition"), new ASTIdnPattern(scope, "ifTrue")), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
@@ -217,7 +262,7 @@ class diesler::builtin::object::IfThenMethod extends DSLMethod {
 }
 
 class diesler::builtin::object::IfThenElseMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "if:then:else:", new Array<ASTPattern>(new ASTIdnPattern(scope, "condition"), new ASTIdnPattern(scope, "ifTrue"), new ASTIdnPattern(scope, "ifFalse")), null) {
+  new(Scope scope) extends super(scope, "if:then:else:", new List<ASTPattern>(new ASTIdnPattern(scope, "condition"), new ASTIdnPattern(scope, "ifTrue"), new ASTIdnPattern(scope, "ifFalse")), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
@@ -240,7 +285,7 @@ class diesler::builtin::object::IfThenElseMethod extends DSLMethod {
 }
 
 class diesler::builtin::object::WhileMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "while:do:", new Array<ASTPattern>(new ASTIdnPattern(scope, "condition"), new ASTIdnPattern(scope, "block")), null) {
+  new(Scope scope) extends super(scope, "while:do:", new List<ASTPattern>(new ASTIdnPattern(scope, "condition"), new ASTIdnPattern(scope, "block")), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
@@ -264,7 +309,7 @@ class diesler::builtin::object::WhileMethod extends DSLMethod {
 }
 
 class diesler::builtin::object::TryCatchMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "try:catch:", new Array<ASTPattern>(new ASTIdnPattern(scope, "tryBlock"), new ASTIdnPattern(scope, "catchBlock")), null) {
+  new(Scope scope) extends super(scope, "try:catch:", new List<ASTPattern>(new ASTIdnPattern(scope, "tryBlock"), new ASTIdnPattern(scope, "catchBlock")), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
@@ -282,7 +327,7 @@ class diesler::builtin::object::TryCatchMethod extends DSLMethod {
 }
 
 class diesler::builtin::object::RaiseExceptionMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "raise:", new Array<ASTPattern>(new ASTIdnPattern(scope, "exception")), null) {
+  new(Scope scope) extends super(scope, "raise:", new List<ASTPattern>(new ASTIdnPattern(scope, "exception")), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
@@ -291,7 +336,7 @@ class diesler::builtin::object::RaiseExceptionMethod extends DSLMethod {
 }
 
 class diesler::builtin::object::ImportMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "import:", new Array<ASTPattern>(new ASTIdnPattern(scope, "filename")), null) {
+  new(Scope scope) extends super(scope, "import:", new List<ASTPattern>(new ASTIdnPattern(scope, "filename")), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {

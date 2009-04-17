@@ -18,3 +18,30 @@ String diesler::util::spaces(Int n) {
   }
   return m.as<String>;
 }
+
+Array<String> diesler::util::splitWithSeparator(Char separator, String str) {
+  var parts = new List<String>();
+  var acc = new MutableString();
+  for(Int i = 0; i < str.length; i++) {
+    acc.append(str[i]);
+    if(str[i] == separator) {
+      if(acc.length > 0) {
+        parts.add(acc.as<String>);
+        acc = new MutableString();
+      }
+    }
+  }
+  if(acc.length > 0) {
+    parts.add(acc.as<String>);
+  }
+  return parts.as<Array<String>>;
+}
+
+String diesler::util::capitalizeString(String str) {
+  var s = new MutableString();
+  s.append(str[0].toUpperCase());
+  for(Int i = 1; i < str.length; i++) {
+    s.append(str[i]);
+  }
+  return s.as<String>;
+}

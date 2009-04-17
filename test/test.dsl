@@ -25,7 +25,7 @@ define: methods{
    }
 
    addOne: n {
-     return: n + 1
+     return n + 1
    }
 }
 
@@ -34,7 +34,7 @@ local counter = 0
 
 Int defineInstance: methods{
   plusOne {
-    return: self + 1
+    return self + 1
   }
 }
 
@@ -69,9 +69,9 @@ while: [n != 0] do: {
 Int defineInstance: methods{
   fact {
     if: [ self == 0 ] then: {
-      return: 1
+      return 1
     } else: {
-      return: self * ((self - 1) fact)
+      return self * ((self - 1) fact)
     }
   }
 }

@@ -3,8 +3,6 @@ import "builtin/list.pil"
 
 import diesler
 
-include "ast/matchpretty.pil"
-
 Bool diesler::checkMatch(Scope scope, ASTNode condition, DSLObject object) {
   if(condition == null) {
     return true;
@@ -26,19 +24,23 @@ class diesler::ASTPattern extends diesler::ASTNode {
   Bool match(Scope scope, DSLObject other, Bool bindLocal) {
     return false;
   }
+
+  String toIndentedString(Int depth) {
+    return condition.toIndentedString(depth);
+  }
 }
 
 class diesler::ASTBindPattern extends diesler::ASTPattern {
   String idn = null;
-  ASTPattern match = null;
+  ASTPattern pattern = null;
 
-  new(Scope scope, String idn, ASTPattern match) extends super(scope["ASTBindPattern"]) {
+  new(Scope scope, String idn, ASTPattern pattern) extends super(scope["ASTBindPattern"]) {
     this.idn = idn;
-    this.match = match;
+    this.pattern = pattern;
   }
 
   Bool match(Scope scope, DSLObject other, Bool bindLocal) {
-    if(match.match(scope, other, bindLocal)) {
+    if(pattern.match(scope, other, bindLocal)) {
       if(bindLocal) {
         scope.setLocal(idn, other);
       } else {
@@ -48,6 +50,10 @@ class diesler::ASTBindPattern extends diesler::ASTPattern {
       return false;
     }
     return checkMatch(scope, condition, other);
+  }
+
+  String toIndentedString(Int depth) {
+    return idn + "@" + pattern.toIndentedString(depth);
   }
 }
 class diesler::ASTIdnPattern extends diesler::ASTPattern {
@@ -64,6 +70,10 @@ class diesler::ASTIdnPattern extends diesler::ASTPattern {
       scope[idn] = other;
     }
     return checkMatch(scope, condition, other);
+  }
+
+  String toIndentedString(Int depth) {
+    return idn;
   }
 }
 
@@ -82,12 +92,16 @@ class diesler::ASTFieldNamePattern extends diesler::ASTPattern {
       return false;
     }
   }
+
+  String toIndentedString(Int depth) {
+    return "@" + fieldName;
+  }
 }
 
 class diesler::ASTListPattern extends diesler::ASTPattern {
-  Array<ASTPattern> items = null;
+  List<ASTPattern> items = null;
 
-  new(Scope scope, Array<ASTPattern> items) extends super(scope["ASTListPattern"]) {
+  new(Scope scope, List<ASTPattern> items) extends super(scope["ASTListPattern"]) {
     this.items = items;
   }
 
@@ -106,13 +120,26 @@ class diesler::ASTListPattern extends diesler::ASTPattern {
     }
     return checkMatch(scope, condition, other);
   }
+
+  String toIndentedString(Int depth) {
+    var s = new MutableString();
+    s.append('(');
+    for(Int i = 0; i < items.length; i++) {
+      s.append(items[i].toIndentedString(depth+1));
+      if(i != items.length-1) {
+        s.append(", ");
+      }
+    }
+    s.append(')');
+    return s.as<String>;
+  }
 }
 
 class diesler::ASTObjectPattern extends diesler::ASTPattern {
   String classString = null;
-  Array<ASTPropertyPattern> properties = null;
+  List<ASTPropertyPattern> properties = null;
 
-  new(Scope scope, String classString, Array<ASTPropertyPattern> properties) extends super(scope["ASTObjectPattern"]) {
+  new(Scope scope, String classString, List<ASTPropertyPattern> properties) extends super(scope["ASTObjectPattern"]) {
     this.classString = classString;
     this.properties = properties;
   }
@@ -134,6 +161,20 @@ class diesler::ASTObjectPattern extends diesler::ASTPattern {
     }
     return checkMatch(scope, condition, other);
   }
+
+  String toIndentedString(Int depth) {
+    var s = new MutableString();
+    s.append(classString);
+    s.append('[');
+    for(Int i = 0; i < properties.length; i++) {
+      s.append(properties[i].toIndentedString(depth+1));
+      if(i != properties.length-1) {
+        s.append(", ");
+      }
+    }
+    s.append(']');
+    return s.as<String>;
+  }
 }
 
 class diesler::ASTPropertyPattern extends diesler::ASTPattern {
@@ -143,6 +184,10 @@ class diesler::ASTPropertyPattern extends diesler::ASTPattern {
   new(Scope scope, String property, ASTPattern pattern) extends super(scope["ASTPropertyPattern"]) {
     this.property = property;
     this.pattern = pattern;
+  }
+
+  String toIndentedString(Int depth) {
+    return property + " => " + pattern.toIndentedString(depth);
   }
 }
 
@@ -160,5 +205,9 @@ class diesler::ASTLiteralPattern extends diesler::ASTPattern {
     } else {
       return false;
     }
+  }
+
+  String toIndentedString(Int depth) {
+    return value.toIndentedString(depth);
   }
 }

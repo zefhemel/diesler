@@ -1,0 +1,70 @@
+import "object.pil"
+import "interpreter.pil"
+import "utils.pil"
+
+import diesler
+
+class diesler::util::GetMethod extends DSLMethod {
+  String property = null;
+
+  new(Scope scope, String property) extends super(scope, property, new List<ASTPattern>(new ASTIdnPattern(scope, "value")), null) {
+    this.property = property;
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    Class klass = o.class;
+    var found = false;
+    while(!found && klass != null) {
+      for(Field field : klass.fields) {
+        if(field.name == property) {
+          if(field.type == typeof List<DSLObject>) {
+            return new DSLList(scope, field.get(o).as<List<DSLObject>>);
+          } else if(field.type == typeof String) {
+            return new DSLString(scope, field.get(o).as<String>);
+          } else {
+            return field.get(o).as<DSLObject>;
+          }
+        }
+      }
+      klass = klass.superClass;
+    }
+    throw new Exception("Property " + property + " not found!");
+  }
+}
+
+class diesler::util::SetMethod extends DSLMethod {
+  String property = null;
+
+  new(Scope scope, String property) extends super(scope, "set" + capitalizeString(property)+":", new List<ASTPattern>(new ASTIdnPattern(scope, "value")), null) {
+    this.property = property;
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    Class klass = o.class;
+    var found = false;
+    while(!found && klass != null) {
+      for(Field field : klass.fields) {
+        if(field.name == property) {
+          if(field.type == typeof List<DSLObject>) {
+            field.set(o, args[0].as<DSLList>.items);
+          } else if(field.type == typeof String) {
+            field.set(o, args[0].as<DSLString>.value);
+          } else {
+            field.set(o, args[0]);
+          }
+          found = true;
+        }
+      }
+      klass = klass.superClass;
+    }
+    if(!found) {
+      throw new Exception("Property " + property + " not found!");
+    }
+    return o;
+  }
+}
+
+void diesler::util::addProperty(Scope scope, DSLClass cls, String property) {
+  cls.instanceMethods[property] = new GetMethod(scope, property);
+  cls.instanceMethods["set" + capitalizeString(property)+":"] = new SetMethod(scope, property);
+}
