@@ -13,8 +13,7 @@ import diesler
 import diesler::exception
 
 void diesler::initInterpreter(Scope scope) {
-  scope.setLocal("Object", diesler::builtin::object::init(scope));
-  scope.setLocal("Method", diesler::builtin::method::init(scope));
+  diesler::builtin::object::init(scope);
   scope.setLocal("String", diesler::builtin::string::init(scope));
   scope.setLocal("Int", diesler::builtin::int::init(scope));
   scope.setLocal("Bool", diesler::builtin::bool::init(scope));

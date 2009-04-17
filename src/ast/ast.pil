@@ -44,7 +44,7 @@ class diesler::ASTMessageSend extends diesler::ASTNode {
     s.append(object.as<String>);
     s.append(' ');
     var selectorParts = splitWithSeparator(':', selector);
-    for(Int i = 0; i < selectorParts.length; i++) {
+    for(Int i = 0; i < selectorParts.length && i < arguments.length; i++) {
       s.append(selectorParts[i] + " " + arguments[i].as<String> + " ");
     }
     return s.as<String>;

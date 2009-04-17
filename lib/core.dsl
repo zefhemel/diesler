@@ -19,6 +19,10 @@ Object defineInstance: methods{
   match: e against: cs {
     cs invoke: (e,)
   }
+
+  respondsTo: selector {
+    (self allMethods map: |m| { m selector }) contains: selector
+  }
 }
 
 

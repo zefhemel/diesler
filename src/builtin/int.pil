@@ -31,6 +31,8 @@ DSLClass diesler::builtin::int::init(Scope scope) {
   int.setInstanceMethod("+", new diesler::builtin::int::AddMethod(scope));
   int.setInstanceMethod("-", new diesler::builtin::int::SubstractMethod(scope));
   int.setInstanceMethod("*", new diesler::builtin::int::MultiplyMethod(scope));
+  int.setInstanceMethod("/", new diesler::builtin::int::DivMethod(scope));
+  int.setInstanceMethod("%", new diesler::builtin::int::ModMethod(scope));
 
   int.setInstanceMethod("<", new diesler::builtin::int::LessThanMethod(scope));
   int.setInstanceMethod(">", new diesler::builtin::int::GreaterThanMethod(scope));
@@ -61,6 +63,24 @@ class diesler::builtin::int::MultiplyMethod extends DSLMethod {
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
     return new DSLInt(scope, o.as<DSLInt>.value * args[0].as<DSLInt>.value);
+  }
+}
+
+class diesler::builtin::int::DivMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "/", new List<ASTPattern>(new ASTIdnPattern(scope, "other")), null) {
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    return new DSLInt(scope, o.as<DSLInt>.value / args[0].as<DSLInt>.value);
+  }
+}
+
+class diesler::builtin::int::ModMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "%", new List<ASTPattern>(new ASTIdnPattern(scope, "other")), null) {
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    return new DSLInt(scope, o.as<DSLInt>.value % args[0].as<DSLInt>.value);
   }
 }
 

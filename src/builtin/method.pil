@@ -6,6 +6,7 @@ import diesler::exception
 
 DSLClass diesler::builtin::method::init(Scope scope) {
   var method = new DSLClass(scope, scope["Object"].as<DSLClass>, "Method");
+  scope.setLocal("Method", method);
   method.setInstanceMethod("invoke:on:", new diesler::builtin::method::InvokeOnMethod(scope));
   method.setInstanceMethod("invoke:", new diesler::builtin::method::InvokeWithArgsMethod(scope));
   method.setInstanceMethod("invoke", new diesler::builtin::method::InvokeMethod(scope));

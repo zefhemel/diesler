@@ -46,6 +46,18 @@ List defineInstance: methods{
     return resultList
   }
 
+  filter: m {
+    local i = 0
+    local resultList = ()
+    while: [ i < self length ] do: {
+      if: [m invoke: (self get: i,)] then: {
+        resultList add: (self get: i)
+      }
+      i = i + 1
+    }
+    return resultList
+  }
+
   reverseEach: m {
     self reverse each: m
   }

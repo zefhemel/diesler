@@ -8,7 +8,8 @@ import diesler::exception
 
 DSLClass diesler::builtin::object::init(Scope scope) {
   var object = new DSLClass(scope, null, "Object");
-
+  scope.setLocal("Object", object);
+  diesler::builtin::method::init(scope);
   object.setMethod("new", new diesler::builtin::object::NewInstanceMethod(scope));
   object.setMethod("defineInstance:", new diesler::builtin::object::DefineMethods(scope, true));
   object.setMethod("define:",  new diesler::builtin::object::DefineMethods(scope, false));
