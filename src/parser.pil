@@ -29,7 +29,7 @@ class diesler::Parser {
     new Array<String>("?", "$")
     );
 
-  List<Char> allOps = new List<Char>('!', '@', '#', '%', '^', '&', '*', '-', '+', '=', '|', '/', '\\', '<', '>', '.', '?');
+  List<Char> allOps = new List<Char>('!', '@', '#', '%', '^', '&', '*', '-', '+', '=', '|', '/', '\\', '<', '>', '.', '?', ':');
 
   new(Scope scope, String text) {
     this.scope = scope;

@@ -31,6 +31,14 @@ Int defineInstance: methods{
     }
   }
 
+  times: m {
+    local counter = 0
+    while: [ counter < self ] do: {
+      m invoke
+      counter = counter + 1
+    }
+  }
+
   isEven {
     self % 2 == 0
   }

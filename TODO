@@ -1,5 +1,8 @@
 * super method invocation (test)
 * Subclass builtins (i.e. implement "new" for builtins)
+* Change naming convention from longMethodWrittenLikeThis to long_method_writter_like_this?
+* String interpolation: "Hello there #{user name}!"
+* MutableString
 * Let all exceptions be DieslerExceptions
 * Unit testing framework
 * Finish native Java import
