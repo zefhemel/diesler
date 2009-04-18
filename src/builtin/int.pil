@@ -40,7 +40,7 @@ DSLClass diesler::builtin::int::init(Scope scope) {
 }
 
 class diesler::builtin::int::AddMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "+", new List<ASTPattern>(new ASTIdnPattern(scope, "other")), null) {
+  new(Scope scope) extends super(scope, "+", new List<ASTPattern>(new ASTIdnPattern(scope, "other")), new List<Bool>(false), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
@@ -49,7 +49,7 @@ class diesler::builtin::int::AddMethod extends DSLMethod {
 }
 
 class diesler::builtin::int::SubstractMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "-", new List<ASTPattern>(new ASTIdnPattern(scope, "other")), null) {
+  new(Scope scope) extends super(scope, "-", new List<ASTPattern>(new ASTIdnPattern(scope, "other")), new List<Bool>(false), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
@@ -58,7 +58,7 @@ class diesler::builtin::int::SubstractMethod extends DSLMethod {
 }
 
 class diesler::builtin::int::MultiplyMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "*", new List<ASTPattern>(new ASTIdnPattern(scope, "other")), null) {
+  new(Scope scope) extends super(scope, "*", new List<ASTPattern>(new ASTIdnPattern(scope, "other")), new List<Bool>(false), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
@@ -67,7 +67,7 @@ class diesler::builtin::int::MultiplyMethod extends DSLMethod {
 }
 
 class diesler::builtin::int::DivMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "/", new List<ASTPattern>(new ASTIdnPattern(scope, "other")), null) {
+  new(Scope scope) extends super(scope, "/", new List<ASTPattern>(new ASTIdnPattern(scope, "other")), new List<Bool>(false), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
@@ -76,7 +76,7 @@ class diesler::builtin::int::DivMethod extends DSLMethod {
 }
 
 class diesler::builtin::int::ModMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "%", new List<ASTPattern>(new ASTIdnPattern(scope, "other")), null) {
+  new(Scope scope) extends super(scope, "%", new List<ASTPattern>(new ASTIdnPattern(scope, "other")), new List<Bool>(false), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
@@ -85,7 +85,7 @@ class diesler::builtin::int::ModMethod extends DSLMethod {
 }
 
 class diesler::builtin::int::LessThanMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "<", new List<ASTPattern>(new ASTIdnPattern(scope, "other")), null) {
+  new(Scope scope) extends super(scope, "<", new List<ASTPattern>(new ASTIdnPattern(scope, "other")), new List<Bool>(false), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
@@ -94,7 +94,7 @@ class diesler::builtin::int::LessThanMethod extends DSLMethod {
 }
 
 class diesler::builtin::int::GreaterThanMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, ">", new List<ASTPattern>(new ASTIdnPattern(scope, "other")), null) {
+  new(Scope scope) extends super(scope, ">", new List<ASTPattern>(new ASTIdnPattern(scope, "other")), new List<Bool>(false), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {

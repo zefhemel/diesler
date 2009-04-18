@@ -6,7 +6,7 @@ import diesler.*;
 
 public class NewNativeClassMethod extends DSLMethod {
 	public NewNativeClassMethod(diesler.Scope scope) {
-		super(scope, "new:", pil.Utils.fromArrayToList(new ASTPattern[] { new ASTIdnPattern(scope, "fullyQualifiedClassName") }), null);
+		super(scope, "new:", pil.Utils.fromArrayToList(new ASTPattern[] { new ASTIdnPattern(scope, "fullyQualifiedClassName") }), pil.Utils.fromArrayToList(new boolean[] {false}), null);
 	}
 
 	@SuppressWarnings("unchecked")

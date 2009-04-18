@@ -159,12 +159,14 @@ class diesler::DSLClass extends DSLObject {
 
 class diesler::DSLMethod extends DSLObject {
   List<ASTPattern> argumentPatterns = null;
+  List<Bool> argumentsLiteral = null;
   ASTBlock block = null;
   String selector = null;
   Scope closure = null;
 
-  new(Scope scope, String selector, List<ASTPattern> argumentPatterns, ASTBlock block) extends super(scope["Method"].as<DSLClass>){
+  new(Scope scope, String selector, List<ASTPattern> argumentPatterns, List<Bool> argumentsLiteral, ASTBlock block) extends super(scope["Method"].as<DSLClass>){
     this.argumentPatterns = argumentPatterns;
+    this.argumentsLiteral = argumentsLiteral;
     this.block = block;
     this.selector = selector;
     this.closure = closure;
@@ -187,12 +189,9 @@ class diesler::DSLMethod extends DSLObject {
       if(!argumentPatterns[i].match(localScope, args[i], true)) {
         throw new DieslerException(new DSLString(scope, "Argument for message " + selector + " did not match pattern."));
       }
-      //localScope.variables[argumentNames[i]] = args[i];
     }
     DSLObject rv = block.eval(localScope);
     if(closure != null) { // embedded block, so set parent return value to local scope
-      //scope.hasReturned = localScope.hasReturned;
-      //scope.returnValue = localScope.returnValue;
       closure.hasReturned = localScope.hasReturned;
       closure.returnValue = localScope.returnValue;
     }
@@ -223,7 +222,7 @@ class diesler::DSLMethodDefs extends DSLObject {
 class diesler::DSLPatternMethod extends DSLMethod {
   List<ASTPatternCase> patternCases = null;
 
-  new(Scope scope, List<ASTPatternCase> patternCases) extends super(scope, "matchMethod:", new List<ASTPattern>(new ASTIdnPattern(scope, "exp")), null) {
+  new(Scope scope, List<ASTPatternCase> patternCases) extends super(scope, "matchMethod:", new List<ASTPattern>(new ASTIdnPattern(scope, "exp")), new List<Bool>(false), null) {
     this.patternCases = patternCases;
   }
 

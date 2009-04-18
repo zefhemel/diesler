@@ -53,10 +53,12 @@ class diesler::ASTMessageSend extends diesler::ASTNode {
 
 class diesler::ASTBlock extends diesler::ASTNode {
   List<ASTPattern> arguments = null;
+  List<Bool> argumentsLiteral = null;
   List<ASTNode> statements = null;
 
-  new(Scope scope, List<ASTPattern> arguments, List<ASTNode> statements) extends super(scope["ASTBlock"]) {
+  new(Scope scope, List<ASTPattern> arguments, List<Bool> argumentsLiteral, List<ASTNode> statements) extends super(scope["ASTBlock"]) {
     this.arguments = arguments;
+    this.argumentsLiteral = argumentsLiteral;
     this.statements = statements;
   }
 
@@ -145,10 +147,12 @@ class diesler::ASTMethodDef extends diesler::ASTNode {
 class diesler::ASTMethodSignature extends diesler::ASTNode {
   String selector = null;
   List<ASTPattern> arguments = null;
+  List<Bool> argumentsLiteral = null;
 
-  new(Scope scope, String selector, List<ASTPattern> arguments) extends super(scope["ASTMethodSignature"]) {
+  new(Scope scope, String selector, List<ASTPattern> arguments, List<Bool> argumentsLiteral) extends super(scope["ASTMethodSignature"]) {
     this.selector = selector;
     this.arguments = arguments;
+    this.argumentsLiteral = argumentsLiteral;
   }
 
   String toIndentedString(Int depth) {

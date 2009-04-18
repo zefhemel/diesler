@@ -7,7 +7,7 @@ import diesler
 class diesler::util::GetMethod extends DSLMethod {
   String property = null;
 
-  new(Scope scope, String property) extends super(scope, property, new List<ASTPattern>(new ASTIdnPattern(scope, "value")), null) {
+  new(Scope scope, String property) extends super(scope, property, new List<ASTPattern>(), new List<Bool>(), null) {
     this.property = property;
   }
 
@@ -35,7 +35,7 @@ class diesler::util::GetMethod extends DSLMethod {
 class diesler::util::SetMethod extends DSLMethod {
   String property = null;
 
-  new(Scope scope, String property) extends super(scope, property+"=", new List<ASTPattern>(new ASTIdnPattern(scope, "value")), null) {
+  new(Scope scope, String property) extends super(scope, property+"=", new List<ASTPattern>(new ASTIdnPattern(scope, "value")), new List<Bool>(), null) {
     this.property = property;
   }
 

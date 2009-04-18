@@ -109,8 +109,10 @@ class diesler::Parser {
     var oldI = i;
     acceptWhiteSpace();
     List<ASTPattern> arguments = new List<ASTPattern>();
+    List<Bool> argumentsLiteral = new List<Bool>();
     if(accept('|')) {
       acceptWhiteSpace();
+      argumentsLiteral.add(accept('%'));
       ASTPattern arg = acceptPatternWithCondition();
       while(arg != null) {
         arguments.add(arg);
@@ -147,7 +149,7 @@ class diesler::Parser {
           acceptAnyWhiteSpace();
         }
       }
-      return new ASTBlock(scope, arguments, stats);
+      return new ASTBlock(scope, arguments, argumentsLiteral, stats);
     }
     return null;
   }
@@ -172,7 +174,7 @@ class diesler::Parser {
         }
         ASTMethodSignature sig = null;
         if(postfixMethodname != null) {
-          sig = new ASTMethodSignature(scope, postfixMethodname, new List<ASTPattern>());
+          sig = new ASTMethodSignature(scope, postfixMethodname, new List<ASTPattern>(), new List<Bool>());
         } else {
           sig = acceptKeywordMethodSignature();
           if(sig == null) {
@@ -194,9 +196,13 @@ class diesler::Parser {
             }
             if(op != null) {
               acceptWhiteSpace();
+              Bool passLiteral = false;
+              if(accept('%')) {
+                passLiteral = true;
+              }
               ASTPattern operandPattern = acceptPatternWithCondition();
               if(operandPattern != null) {
-                sig = new ASTMethodSignature(scope, op, new List<ASTPattern>(operandPattern));
+                sig = new ASTMethodSignature(scope, op, new List<ASTPattern>(operandPattern), new List<Bool>(passLiteral));
               } else {
                 throw new ParseException(this, "operand pattern expected");
               }
@@ -252,18 +258,24 @@ class diesler::Parser {
   ASTMethodSignature acceptKeywordMethodSignature() {
     var selector = new MutableString();
     var args = new List<ASTPattern>();
+    var argsLiteral = new List<Bool>();
     acceptWhiteSpace();
     var kw = acceptKeyword();
     while(kw != null) {
       selector.append(kw);
       acceptWhiteSpace();
+      Bool argLiteral = false;
+      if(accept('%')) {
+        argLiteral = true;
+      }
       ASTPattern arg = acceptPatternWithCondition();
       args.add(arg);
+      argsLiteral.add(argLiteral);
       acceptWhiteSpace();
       kw = acceptKeyword();
     }
     if(args.length > 0) {
-      return new ASTMethodSignature(scope, selector.as<String>, args);
+      return new ASTMethodSignature(scope, selector.as<String>, args, argsLiteral);
     } else {
       return null;
     }
@@ -628,7 +640,7 @@ class diesler::Parser {
         throw new ParseException(this, "Newline or ; expected");
       }
     }
-    return new ASTBlock(scope, new List<ASTPattern>(), stats);
+    return new ASTBlock(scope, new List<ASTPattern>(), new List<Bool>(), stats);
   }
 
 
