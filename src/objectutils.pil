@@ -35,7 +35,7 @@ class diesler::util::GetMethod extends DSLMethod {
 class diesler::util::SetMethod extends DSLMethod {
   String property = null;
 
-  new(Scope scope, String property) extends super(scope, "set" + capitalizeString(property)+":", new List<ASTPattern>(new ASTIdnPattern(scope, "value")), null) {
+  new(Scope scope, String property) extends super(scope, property+"=", new List<ASTPattern>(new ASTIdnPattern(scope, "value")), null) {
     this.property = property;
   }
 
@@ -66,5 +66,5 @@ class diesler::util::SetMethod extends DSLMethod {
 
 void diesler::util::addProperty(Scope scope, DSLClass cls, String property) {
   cls.setInstanceMethod(property, new GetMethod(scope, property));
-  cls.setInstanceMethod("set" + capitalizeString(property)+":", new SetMethod(scope, property));
+  cls.setInstanceMethod(property+"=", new SetMethod(scope, property));
 }

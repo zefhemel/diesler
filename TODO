@@ -1,4 +1,6 @@
-* super method invocation
+* super method invocation (test)
+* Subclass builtins (i.e. implement "new" for builtins)
+* Let all exceptions be DieslerExceptions
 * Unit testing framework
 * Finish native Java import
 * Object creation similar to object pattern match syntax: User[ name = "Zef Hemel", age = 25 ]

@@ -103,6 +103,11 @@ void diesler::builtin::ast::initPatterns(Scope scope) {
   addProperty(scope, cls, "idn");
   scope.setLocal(cls.name, cls);
 
+  cls = new DSLClass(scope, pattern, "ASTSetPropertyPattern");
+  addProperty(scope, cls, "exp");
+  addProperty(scope, cls, "property");
+  scope.setLocal(cls.name, cls);
+
   cls = new DSLClass(scope, pattern, "ASTFieldNamePattern");
   addProperty(scope, cls, "fieldName");
   scope.setLocal(cls.name, cls);

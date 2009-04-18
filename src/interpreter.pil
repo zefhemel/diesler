@@ -60,17 +60,18 @@ class diesler::Scope {
   }
 
   void set(String var, DSLObject value) {
-    if(variables == null) {
-      variables = new Map<String, DSLObject>();
-    }
-    var scope = this;
-    while(!scope.variables.contains(var) && scope.parent != null) {
-      scope = scope.parent;
-    }
-    if(scope.variables.contains(var)) {
-      scope.variables[var] = value;
-    } else { // No such variable exists!
-      throw new DieslerException(new DSLString(scope, "No such variable declared: " + var));
+    if(variables == null || !variables.contains(var)) {
+      if(parent != null) {
+        parent.set(var, value);
+      } else {
+        throw new DieslerException(new DSLString(this, "No such variable declared: " + var));
+      }
+    } else {
+      if(variables == null) {
+        variables = new Map<String, DSLObject>();
+      }
+      //println("Putting " + var + " value: " + value.as<String> + " in: " + variables.as<String>);
+      variables[var] = value;
     }
   }
 

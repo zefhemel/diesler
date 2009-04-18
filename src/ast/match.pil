@@ -98,6 +98,30 @@ class diesler::ASTFieldNamePattern extends diesler::ASTPattern {
   }
 }
 
+class diesler::ASTSetPropertyPattern extends diesler::ASTPattern {
+  ASTNode exp = null;
+  String property = null;
+
+  new(Scope scope, ASTNode exp, String property) extends super(scope["ASTSetPropertyPattern"]) {
+    this.exp = exp;
+    this.property = property;
+  }
+
+  Bool match(Scope scope, DSLObject other, Bool bindLocal) {
+    DSLObject result = exp.eval(scope);
+    if(result.getMethod(property + "=") != null) {
+      result.getMethod(property + "=").invoke(scope, result, new Array<DSLObject>(other));
+    } else {
+      return false;
+    }
+    return checkMatch(scope, condition, other);
+  }
+
+  String toIndentedString(Int depth) {
+    return exp.as<String> + " " + property;
+  }
+}
+
 class diesler::ASTListPattern extends diesler::ASTPattern {
   List<ASTPattern> items = null;
 

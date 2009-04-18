@@ -19,10 +19,10 @@ class diesler::Parser {
   Scope scope = null;
 
   Array<Array<String>> operators = new Array<Array<String>>(
-    new Array<String>("."),
+    new Array<String>(".", ":"),
     new Array<String>("*", "/", "%"),
     new Array<String>("+", "-"),
-    new Array<String>("<", "<=", ">", ">=", "==", "!="),
+    new Array<String>("<", "<=", ">", ">=", "==", "!=", ":="),
     new Array<String>("!"),
     new Array<String>("&"),
     new Array<String>("|"),
@@ -115,12 +115,18 @@ class diesler::Parser {
       while(arg != null) {
         arguments.add(arg);
         acceptWhiteSpace();
-        accept(',');
+        if(!accept(',') && !lookAhead("|")) {
+          i = oldI;
+          return null;
+        }
         acceptWhiteSpace();
         arg = acceptPatternWithCondition();
       }
       acceptWhiteSpace();
-      expect('|');
+      if(!accept('|')) {
+        i = oldI;
+        return null;
+      }
       acceptWhiteSpace();
     }
     if(accept('{') || accept('[')) {
@@ -158,7 +164,12 @@ class diesler::Parser {
       acceptAnyWhiteSpace();
       var decls = new List<ASTMethodDef>();
       while(!accept('}')) {
+        var beforeI = i;
         String postfixMethodname = acceptIdnNoKeyword();
+        if(accept('=')) {
+          postfixMethodname = null;
+          i = beforeI;
+        }
         ASTMethodSignature sig = null;
         if(postfixMethodname != null) {
           sig = new ASTMethodSignature(scope, postfixMethodname, new List<ASTPattern>());
@@ -171,6 +182,15 @@ class diesler::Parser {
             while(c < operators.length && op == null) {
               op = acceptOps(operators[c]);
               c++;
+            }
+            if(op == null) {
+              beforeI = i;
+              var prop = acceptIdnNoKeyword();
+              if(prop != null && accept('=')) {
+                op = prop + "=";
+              } else {
+                i = beforeI;
+              }
             }
             if(op != null) {
               acceptWhiteSpace();
@@ -466,6 +486,17 @@ class diesler::Parser {
 
   ASTPattern acceptPattern() {
     var oldI = i;
+    ASTNode e = acceptPostfix();
+    if(e != null && e isa ASTMessageSend) {
+      ASTMessageSend ms = e.as<ASTMessageSend>;
+      if(ms.arguments.length == 0) { // Yep!
+        return new ASTSetPropertyPattern(scope, ms.object, ms.selector);
+      } else {
+        i = oldI;
+      }
+    } else {
+      i = oldI;
+    }
     String idn = acceptIdn();
     if(idn != null) {
       acceptWhiteSpace();
@@ -675,7 +706,7 @@ class diesler::Parser {
           opstr.append(text[i]);
           i++;
         }
-        if(text[i-1] != '=' || opstr.as<String> == op) {
+        if((text[i-1] != '=' || opstr.as<String> == op) && opstr.as<String> != "|") {
           return opstr.as<String>;
         } else {
           i = oldI;

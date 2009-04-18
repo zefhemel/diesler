@@ -233,12 +233,12 @@ class diesler::DSLPatternMethod extends DSLMethod {
       Scope matchScope = new Scope(scope, o);
       if(patternCases[i].match.match(matchScope, expr, true)) {
         patternCases[i].block.eval(matchScope);
-        if(matchScope.hasReturned) {
+        if(matchScope.returnValue != null) {
           return matchScope.returnValue;
         }
       }
     }
-    return o;
+    return new DSLNull(scope);
   }
 
   as<String> {

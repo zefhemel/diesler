@@ -42,7 +42,8 @@ class diesler::ASTBlock extends diesler::ASTNode {
   DSLObject eval(Scope scope) {
     for(Int i = 0; i < statements.length; i++) {
       if(i == statements.length-1) {
-        return statements[i].eval(scope);
+        scope.returnValue = statements[i].eval(scope);
+        return scope.returnValue;
       } else {
         statements[i].eval(scope);
         if(scope.hasReturned) {
