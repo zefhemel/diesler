@@ -10,6 +10,7 @@ import pil::reflect
 void diesler::builtin::ast::init(Scope scope) {
   var node = new DSLClass(scope, scope["Object"].as<DSLClass>, "ASTNode");
   scope.setLocal("ASTNode", node);
+  setNewMethod(scope, node, DSLObject(DSLClass instanceOf) { new ASTNode(instanceOf) });
 
   DSLClass cls = null;
   cls = new DSLClass(scope, node, "ASTMessageSend");

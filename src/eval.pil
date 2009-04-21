@@ -17,13 +17,21 @@ class diesler::ASTNode extends DSLObject {
 @extend
 class diesler::ASTMessageSend extends diesler::ASTNode {
   DSLObject eval(Scope scope) {
-    var o = object.eval(scope);
+    DSLObject methodObj = null; 
+    DSLObject targetObj = null; 
+    if(object isa ASTIdn && object.as<ASTIdn>.idn == "super") {
+      methodObj = scope.self.cls.superClass.getMethod("new").invoke(scope, scope.self.cls.superClass, new Array<DSLObject>());
+      targetObj = scope.self;
+    } else {
+      targetObj = object.eval(scope);
+      methodObj = targetObj;
+    }
     var args = new Array<DSLObject>(arguments.length);
-    DSLMethod method = o.getMethod(selector);
+    DSLMethod method = methodObj.getMethod(selector);
     if(method == null) {
-      if(o.getMethod("missingMethod:withArgs:") != null) {
+      if(methodObj.getMethod("missingMethod:withArgs:") != null) {
         args = new Array<DSLObject>(2);
-        method = o.getMethod("missingMethod:withArgs:");
+        method = methodObj.getMethod("missingMethod:withArgs:");
         args[0] = new DSLString(scope, selector);
         var argList = new List<DSLObject>();
         for(Int i = 0; i < arguments.length; i++) {
@@ -42,7 +50,7 @@ class diesler::ASTMessageSend extends diesler::ASTNode {
         }
       }
     }
-    return method.invoke(scope, o, args);
+    return method.invoke(scope, targetObj, args);
   }
 }
 

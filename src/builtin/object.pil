@@ -121,13 +121,17 @@ class diesler::builtin::object::MethodsMethod extends DSLMethod {
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
     var l = new List<DSLObject>();
+    println("Calling methods on " + o.as<String>);
     if(o.methods != null) {
       for(String methodName : o.methods.keys) {
         l.add(o.methods[methodName]);
       }
     }
     if(!(o isa DSLClass) && o.cls != null) {
+      println("Listing methods from class: " + o.cls.as<String>);
+      println("Listing methods from class: " + o.cls.instanceMethods.as<String>);
       DSLList classMethods = o.cls.getMethod("instanceMethods").invoke(scope, o.cls, args).as<DSLList>;
+      println(classMethods.items);
       for(DSLMethod m : classMethods.items) {
         l.add(m);
       }

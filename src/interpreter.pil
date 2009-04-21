@@ -37,12 +37,6 @@ class diesler::Scope {
   DSLObject get(String var) {
     if(var == "self") {
       return self;
-    } else if(var == "super") {
-      if(self.cls != null && self.cls.superClass != null) {
-        return new DSLObject(self.cls.superClass);
-      } else {
-        throw new DieslerException(new DSLString(this, "This class has no super class"));
-      }
     } else if(variables != null && variables.contains(var)) {
       return variables[var];
     } else if(parent != null) {

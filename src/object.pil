@@ -41,8 +41,12 @@ class diesler::DSLObject {
       return methods[selector];
     }
     var curCls = this.cls;
+    //println("Looking up method: " + selector);
+    //println("Curcls: " + curCls.name);
     while(curCls != null && (curCls.instanceMethods == null || !curCls.instanceMethods.contains(selector))) {
       curCls = curCls.superClass;
+      //println("Curcls: " + curCls.name);
+      //println(curCls.instanceMethods);
     }
     if(curCls == null) {
       return null;

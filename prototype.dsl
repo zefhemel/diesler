@@ -17,3 +17,24 @@ Update = Entity subclass: "Update" as: {
 }
 
 User all where: self name == "Zef" order_desc_by: self age
+
+// Or even, using advanced AST transformation magic
+entity: Update is: {
+  author   -> User
+  message  :: String
+  comments -> Comment set
+}
+
+Update create: {
+  author = User find_where: self name == "Zef"
+  message = "Hello!"
+  comments = ()
+}
+
+html: {
+  p: {
+    a href: "http://www.zefhemel.com" body: {
+      "My website!"
+    }
+  }
+}

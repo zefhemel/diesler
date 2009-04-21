@@ -11,7 +11,11 @@ include "eval.pil"
 class diesler::ASTNode extends DSLObject {
   new(DSLObject instanceOf) extends super(instanceOf.as<DSLClass>) {
   }
+
   DSLObject eval(Scope scope) {
+    if(getMethod("eval") != null) {
+      return getMethod("eval").invoke(scope, this, new Array<DSLObject>());
+    }
     throw new Exception("Not yet implemented!");
   }
 

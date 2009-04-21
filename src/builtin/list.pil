@@ -1,6 +1,8 @@
 import "object.pil"
+import "objectutils.pil"
 
 import diesler
+import diesler::util
 import diesler::exception
 
 class diesler::DSLList extends DSLObject {
@@ -33,6 +35,12 @@ DSLClass diesler::builtin::list::init(Scope scope) {
   list.setInstanceMethod("get:", new diesler::builtin::list::GetMethod(scope));
   list.setInstanceMethod("length", new diesler::builtin::list::LengthMethod(scope));
   //list.setInstanceMethod("each:", new diesler::builtin::list::EachMethod(scope));
+  setNewMethod(scope, list, DSLObject(DSLClass instanceOf) { 
+    var o = new DSLList(scope, new List<DSLObject>()); 
+    o.cls = instanceOf; 
+    o 
+  });
+  
 
   list.setInstanceMethod("==", new diesler::builtin::list::EqualsMethod(scope));
   return list;

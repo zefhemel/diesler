@@ -21,6 +21,10 @@ class diesler::util::GetMethod extends DSLMethod {
             return new DSLList(scope, field.get(o).as<List<DSLObject>>);
           } else if(field.type == typeof String) {
             return new DSLString(scope, field.get(o).as<String>);
+          } else if(field.type == typeof Bool) {
+            return new DSLBool(scope, field.get(o).as<Bool>);
+          } else if(field.type == typeof Int) {
+            return new DSLInt(scope, field.get(o).as<Int>);
           } else {
             return field.get(o).as<DSLObject>;
           }
@@ -35,7 +39,7 @@ class diesler::util::GetMethod extends DSLMethod {
 class diesler::util::SetMethod extends DSLMethod {
   String property = null;
 
-  new(Scope scope, String property) extends super(scope, property+"=", new List<ASTPattern>(new ASTIdnPattern(scope, "value")), new List<Bool>(), null) {
+  new(Scope scope, String property) extends super(scope, property+"=", new List<ASTPattern>(new ASTIdnPattern(scope, "value")), new List<Bool>(false), null) {
     this.property = property;
   }
 
@@ -49,6 +53,10 @@ class diesler::util::SetMethod extends DSLMethod {
             field.set(o, args[0].as<DSLList>.items);
           } else if(field.type == typeof String) {
             field.set(o, args[0].as<DSLString>.value);
+          } else if(field.type == typeof Bool) {
+            field.set(o, args[0].as<DSLBool>.value);
+          } else if(field.type == typeof Int) {
+            field.set(o, args[0].as<DSLInt>.value);
           } else {
             field.set(o, args[0]);
           }
@@ -64,7 +72,27 @@ class diesler::util::SetMethod extends DSLMethod {
   }
 }
 
+class diesler::util::NewMethod extends DSLMethod {
+  Function1<DSLObject, DSLClass> creatorFun = null;
+
+  new(Scope scope, Function1<DSLObject, DSLClass> creatorFun) extends super(scope, "new", new List<ASTPattern>(), new List<Bool>(), null) {
+    this.creatorFun = creatorFun;
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    DSLObject obj = creatorFun.call(o.as<DSLClass>);
+    if(obj.getMethod("init") != null) {
+      obj.getMethod("init").invoke(scope, obj, new Array<DSLMethod>());
+    }
+    return obj;
+  }
+}
+
 void diesler::util::addProperty(Scope scope, DSLClass cls, String property) {
   cls.setInstanceMethod(property, new GetMethod(scope, property));
   cls.setInstanceMethod(property+"=", new SetMethod(scope, property));
+}
+
+void diesler::util::setNewMethod(Scope scope, DSLClass cls, Function1<DSLObject, DSLClass> creatorFun) {
+  cls.setMethod("new", new NewMethod(scope, creatorFun));
 }

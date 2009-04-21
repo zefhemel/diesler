@@ -12,6 +12,13 @@ DSLClass diesler::builtin::method::init(Scope scope) {
   method.setInstanceMethod("invoke", new diesler::builtin::method::InvokeMethod(scope));
   addProperty(scope, method, "selector");
   addProperty(scope, method, "block");
+  addProperty(scope, method, "argumentPatterns");
+  addProperty(scope, method, "argumentsLiteral");
+  setNewMethod(scope, method, DSLObject(DSLClass instanceOf) { 
+    var cl = new DSLMethod(scope, "unkown", new List<ASTPattern>(), new List<Bool>(), null);
+    cl.cls = instanceOf;
+    cl
+  });
   return method;
 }
 
