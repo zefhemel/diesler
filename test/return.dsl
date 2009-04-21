@@ -1,6 +1,6 @@
 
 define: methods{
-  returnSomething {
+  return_something {
     print: "Hello"
     if: [ true ] then: {
       return 10
@@ -17,7 +17,7 @@ define: methods{
   }
 }
 
-self returnSomething
+self return_something
 self whatever
 
 local m = cases {

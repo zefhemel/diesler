@@ -4,6 +4,7 @@ import "builtin/object.pil"
 import "builtin/string.pil"
 import "builtin/int.pil"
 import "builtin/list.pil"
+import "builtin/dictionary.pil"
 import "builtin/bool.pil"
 import "builtin/native.pil"
 import "builtin/method.pil"
@@ -18,6 +19,7 @@ void diesler::initInterpreter(Scope scope) {
   scope.setLocal("Int", diesler::builtin::int::init(scope));
   scope.setLocal("Bool", diesler::builtin::bool::init(scope));
   scope.setLocal("List", diesler::builtin::list::init(scope));
+  scope.setLocal("Dict", diesler::builtin::dictionary::init(scope));
   diesler::builtin::ast::init(scope);
   diesler::builtin::ast::initPatterns(scope);
 }

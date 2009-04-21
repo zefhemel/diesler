@@ -1,6 +1,6 @@
 local Logger
 
-Logger = Object subClass: "Logger" with: methods{
+Logger = Object subclass: "Logger" with: methods{
   init {
     @level = 1
   }

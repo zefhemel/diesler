@@ -30,7 +30,7 @@ define: methods{
 sayHello: "Zef"
 local counter = 0
 
-Int defineInstance: methods{
+Int define_instance: methods{
   plusOne {
     return self + 1
   }
@@ -43,7 +43,7 @@ print: counter
 
 local User, zef, n
 
-User = Object subClass: "User" with: methods{
+User = Object subclass: "User" with: methods{
   init {
     set: "name" to: "unkown"
     set: "age" to: 0
@@ -64,7 +64,7 @@ while: [n != 0] do: {
   n = n - 1
 }
 
-Int defineInstance: methods{
+Int define_instance: methods{
   fact {
     if: [ self == 0 ] then: {
       return 1

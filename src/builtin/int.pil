@@ -24,6 +24,10 @@ class diesler::DSLInt extends DSLObject {
       return false;
     }
   }
+
+  Int hashCode() {
+    return value.hashCode();
+  }
 }
 
 DSLClass diesler::builtin::int::init(Scope scope) {

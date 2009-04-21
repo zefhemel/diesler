@@ -2,7 +2,7 @@ try: {
   raise: 10
 } catch: |e| {
   match: e against: cases{
-    n(isA: Int) {
+    n(isa: Int) {
       print: n
     }
 

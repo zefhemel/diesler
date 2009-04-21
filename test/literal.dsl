@@ -1,5 +1,5 @@
 define: methods {
-  passLiteral: %lit {
+  pass_literal: %lit {
     print: lit
   }
   
@@ -8,8 +8,8 @@ define: methods {
   }
 }
 
-passLiteral: "Hello"
-passLiteral: 8 + 8
-passLiteral: (self fire)
+pass_literal: "Hello"
+pass_literal: 8 + 8
+pass_literal: (self fire)
 
 self ++ 20

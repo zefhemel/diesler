@@ -1,36 +1,36 @@
-local (a(isA: String), b(isA: Int), c(isA: Int)) = ("Zef", 25, 27)
+local (a(isa: String), b(isa: Int), c(isa: Int)) = ("Zef", 25, 27)
 print: (c, b, a)
 
-local n (isA: Int) = 10
+local n (isa: Int) = 10
 print: n
 
 local User
 
-User = Object subClass: "User" with: methods{
+User = Object subclass: "User" with: methods{
   init {
     @name = "unknown"
     @age = 0
   }
 
-  name: name { @name = name }
+  name= name { @name = name }
   name { @name }
 
-  age: age { @age = age }
+  age= age { @age = age }
   age { @age }
 }
 
 local zef = User new
-zef name: "Zef Hemel"
-zef age: 25
+zef name = "Zef Hemel"
+zef age = 25
 
 define: methods{
-  showSecond: (first(isA: Int), second(isA: Int)) {
+  show_second: (first(isa: Int), second(isa: Int)) {
     print: second
   }
 
-  saySomethingAbout: sth {
+  say_something_about: sth {
     match: sth against: cases{
-      str(isA: String) { 
+      str(isa: String) { 
         print: "It's a string!" 
       }
 
@@ -38,7 +38,7 @@ define: methods{
         print: "It's 10!"
       }
 
-      n(isA: Int) {
+      n(isa: Int) {
         print: "It's an integer!"
       }
 
@@ -55,11 +55,11 @@ define: methods{
   }
 }
 
-saySomethingAbout: 10
-saySomethingAbout: "Zef Hemel"
-saySomethingAbout: c
-saySomethingAbout: zef
-zef name: "Pietje"
-saySomethingAbout: zef
+say_something_about: 10
+say_something_about: "Zef Hemel"
+say_something_about: c
+say_something_about: zef
+zef name = "Pietje"
+say_something_about: zef
 
-showSecond: (1, 2)
+show_second: (1, 2)

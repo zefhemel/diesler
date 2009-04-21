@@ -1,6 +1,6 @@
 local Set
 
-Set = Object subClass: "Set" with: methods{
+Set = Object subclass: "Set" with: methods{
   init {
     @list = ()
   }
@@ -17,7 +17,7 @@ Set = Object subClass: "Set" with: methods{
   }
 }
 
-List defineInstance: methods{
+List define_instance: methods{
   reverse {
     local l = ()
     local c = (self length) - 1
@@ -58,29 +58,17 @@ List defineInstance: methods{
     return resultList
   }
 
-  reverseEach: m {
+  reverse_each: m {
     self reverse each: m
   }
 
-  addAll: l {
+  add_all: l {
     l each: |e| { add: e }
     return self
   }
 }
 
-List define: methods{
-  rangeFrom: from to: to {
-    local c = from
-    local l = ()
-    while: [ c <= to ] do: {
-      l add: c
-      c = c + 1
-    }
-    return l
-  }
-}
-
-local TypedList = List subClass: "TypedList" with: methods {
+local TypedList = List subclass: "TypedList" with: methods {
   add: item {
     super add: item
   }

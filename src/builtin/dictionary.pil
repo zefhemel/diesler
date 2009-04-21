@@ -1,0 +1,113 @@
+import "object.pil"
+import "objectutils.pil"
+
+import diesler
+import diesler::util
+import diesler::exception
+
+class diesler::DSLMap extends DSLObject {
+  Map<DSLObject, DSLObject> values = null;
+
+  new(Scope scope, Map<DSLObject, DSLObject> values) extends super(scope["Map"].as<DSLClass>) {
+    this.values = values;
+  }
+
+  as<String> {
+    var s = new MutableString("{\n");
+    for(DSLObject key : values.keys) {
+      s.append(key.as<String> + " = " + values[key].as<String> + "\n");
+    }
+    s.append('}');
+    return s.as<String>;
+  }
+
+  Int hashCode() {
+    return values.hashCode();
+  }
+}
+
+DSLClass diesler::builtin::dictionary::init(Scope scope) {
+  var dictionary = new DSLClass(scope, scope["Object"].as<DSLClass>, "Dict");
+  dictionary.setInstanceMethod("at:put:", new diesler::builtin::dictionary::PutMethod(scope));
+  dictionary.setInstanceMethod("get:", new diesler::builtin::dictionary::GetMethod(scope));
+  dictionary.setInstanceMethod("contains:", new diesler::builtin::dictionary::ContainsMethod(scope));
+  dictionary.setInstanceMethod("remove:", new diesler::builtin::dictionary::RemoveMethod(scope));
+  dictionary.setInstanceMethod("keys", new diesler::builtin::dictionary::ContainsMethod(scope));
+  setNewMethod(scope, dictionary, DSLObject(DSLClass instanceOf) { 
+    var o = new DSLMap(scope, new Map<DSLObject,DSLObject>()); 
+    o.cls = instanceOf; 
+    o 
+  });
+  
+  dictionary.setInstanceMethod("==", new diesler::builtin::dictionary::EqualsMethod(scope));
+  return dictionary;
+}
+
+class diesler::builtin::dictionary::PutMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "at:put:", new List<ASTPattern>(new ASTIdnPattern(scope, "key"), new ASTIdnPattern(scope, "value")), new List<Bool>(false, false), null) {
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    var l = o.as<DSLMap>;
+    l.values[args[0]] = args[1];
+    return o;
+  }
+}
+
+
+class diesler::builtin::dictionary::RemoveMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "remove:", new List<ASTPattern>(new ASTIdnPattern(scope, "item")), new List<Bool>(false), null) {
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    var l = o.as<DSLMap>;
+    l.values.remove(args[0]);
+    return o;
+  }
+}
+
+class diesler::builtin::dictionary::ContainsMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "contains:", new List<ASTPattern>(new ASTIdnPattern(scope, "item")), new List<Bool>(false), null) {
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    var l = o.as<DSLMap>;
+    return new DSLBool(scope, l.values.contains(args[0]));
+  }
+}
+
+class diesler::builtin::dictionary::GetMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "get:", new List<ASTPattern>(new ASTIdnPattern(scope, "index")), new List<Bool>(false), null) {
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    var l = o.as<DSLMap>;
+    return l.values[args[0]];
+  }
+}
+
+class diesler::builtin::dictionary::KeysMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "keys", new List<ASTPattern>(), new List<Bool>(), null) {
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    var l = o.as<DSLMap>;
+    var items = new DSLList(scope, new List<DSLObject>());
+    for(DSLObject key : l.values.keys) {
+      items.items.add(key);
+    }
+    return items;
+  }
+}
+
+
+class diesler::builtin::dictionary::EqualsMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "==", new List<ASTPattern>(new ASTIdnPattern(scope, "other")), new List<Bool>(false), null) {
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    var l = o.as<DSLMap>;
+    var l2 = args[0].as<DSLMap>;
+    return new DSLBool(scope, l.values == l2.values);
+  }
+}

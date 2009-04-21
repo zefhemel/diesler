@@ -40,7 +40,7 @@ void main(Array<String> args) {
         } else {
           try {
             var result = block.eval(scope);
-            if(!(result isa DSLNull)) {
+            if(!(result isa DSLNull) && result != null) {
               if(result.getMethod("asString") != null) {
                 println("Result: " + result.getMethod("asString").invoke(scope, result, new Array<DSLObject>()).as<String>);
               } else {

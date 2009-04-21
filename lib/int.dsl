@@ -1,5 +1,5 @@
 
-Int defineInstance: methods{
+Int define_instance: methods{
   .. up {
     local l = ()
     local counter = self
@@ -39,11 +39,11 @@ Int defineInstance: methods{
     }
   }
 
-  isEven {
+  is_even {
     self % 2 == 0
   }
 
-  isOdd {
+  is_odd {
     self % 2 == 1
   }
 }

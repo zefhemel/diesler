@@ -1,17 +1,17 @@
 
 Object define: methods {
-  subClass: name with: ms {
-    local cls = subClass: name
-    cls defineInstance: ms
+  subclass: name with: ms {
+    local cls = subclass: name
+    cls define_instance: ms
     return cls
   }
 
-  subClass {
-    return subClass: "Unnamed"
+  subclass {
+    return sub_class: "Unnamed"
   }
 }
 
-Object defineInstance: methods{
+Object define_instance: methods{
   not: e {
     e != true
   }
@@ -20,13 +20,13 @@ Object defineInstance: methods{
     cs invoke: (e,)
   }
 
-  respondsTo: selector {
-    (self allMethods map: |m| { m selector }) contains: selector
+  responds_to: selector {
+    (self all_methods map: |m| { m selector }) contains: selector
   }
 }
 
 
-Bool defineInstance: methods{
+Bool define_instance: methods{
   && other {
     if: [ self == true ] then: {
       if: [ other == true ] then: {
@@ -53,7 +53,7 @@ Bool defineInstance: methods{
   }
 }
 
-Int defineInstance: methods{
+Int define_instance: methods{
   <= other {
     return self < other || self == other
   }
