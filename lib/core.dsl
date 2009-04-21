@@ -28,8 +28,8 @@ Object define_instance: methods{
 
 Bool define_instance: methods{
   && other {
-    if: [ self == true ] then: {
-      if: [ other == true ] then: {
+    if: self == true then: {
+      if: other == true then: {
         return true
       }
     }
@@ -37,14 +37,14 @@ Bool define_instance: methods{
   }
 
   || other {
-    if: [ self == true ] then: {
-      if: [ other == true ] then: {
+    if: self == true then: {
+      if: other == true then: {
         return true
       } else: {
         return true
       }
     } else: {
-      if: [ other == true ] then: {
+      if: other == true then: {
         return true
       } else: {
         return false

@@ -52,21 +52,21 @@ User = Object subclass: "User" with: methods{
 
 zef = User new init
 print: (zef get: "name")
-if: [ (zef get: "name") == "unknown" ] then: {
+if: (zef get: "name") == "unknown" then: {
   print: "Default value still!"
 } else: {
   print: "value has been changed!"
 }
 
 n = 10
-while: [n != 0] do: {
+while: n != 0 do: {
   print: n
   n = n - 1
 }
 
 Int define_instance: methods{
   fact {
-    if: [ self == 0 ] then: {
+    if: self == 0 then: {
       return 1
     } else: {
       return self * ((self - 1) fact)

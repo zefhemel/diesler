@@ -6,7 +6,7 @@ Set = Object subclass: "Set" with: methods{
   }
 
   add: e {
-    if: [ not: (@list contains: e) ] then: {
+    if: (not: (@list contains: e)) then: {
       @list add: e
     } 
     return @list
@@ -21,7 +21,7 @@ List define_instance: methods{
   reverse {
     local l = ()
     local c = (self length) - 1
-    while: [ c >= 0 ] do: {
+    while: c >= 0 do: {
       l add: (get: c)
       c = c - 1
     }
@@ -30,7 +30,7 @@ List define_instance: methods{
 
   each: m {
     local i = 0
-    while: [ i < self length ] do: {
+    while: i < self length do: {
       m invoke: ((get: i),)
       i = i + 1
     }
@@ -39,7 +39,7 @@ List define_instance: methods{
   map: m {
     local i = 0
     local resultList = ()
-    while: [ i < self length ] do: {
+    while: i < self length do: {
       resultList add: (m invoke: ((get: i),))
       i = i + 1
     }
@@ -49,8 +49,8 @@ List define_instance: methods{
   filter: m {
     local i = 0
     local resultList = ()
-    while: [ i < self length ] do: {
-      if: [m invoke: (self get: i,)] then: {
+    while: i < self length do: {
+      if: (m invoke: (self get: i,)) then: {
         resultList add: (self get: i)
       }
       i = i + 1

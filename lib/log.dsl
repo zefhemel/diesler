@@ -10,13 +10,13 @@ Logger = Object subclass: "Logger" with: methods{
   }
 
   debug: msg {
-    if: [ @level == 1 ] then: {
+    if: @level == 1 then: {
       print: "[DEBUG] " + msg
     }
   }
 
   info: msg {
-    if: [ @level >= 2 ] then: {
+    if: @level >= 2 then: {
       print: "[INFO] " + msg
     }
   }

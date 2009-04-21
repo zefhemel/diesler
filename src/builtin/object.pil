@@ -273,15 +273,9 @@ class diesler::builtin::object::IfThenMethod extends DSLMethod {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
-    verifyType(args[0], typeof DSLMethod);
-    verifyType(args[1], typeof DSLMethod);
-    DSLMethod cond = args[0].as<DSLMethod>;
+    DSLBool cond = args[0].as<DSLBool>;
     DSLMethod trueBlock = args[1].as<DSLMethod>;
-    DSLObject value = cond.invoke(scope, o, new Array<DSLObject>());
-    if(!(value isa DSLBool)) {
-      throw new Exception("Condition should return a Bool: " + cond.as<String>);
-    }
-    if(value.as<DSLBool>.value) {
+    if(cond.as<DSLBool>.value) {
       return trueBlock.invoke(scope, o, new Array<DSLObject>());
     }
     return o;
@@ -293,17 +287,10 @@ class diesler::builtin::object::IfThenElseMethod extends DSLMethod {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
-    verifyType(args[0], typeof DSLMethod);
-    verifyType(args[1], typeof DSLMethod);
-    verifyType(args[2], typeof DSLMethod);
-    DSLMethod cond = args[0].as<DSLMethod>;
+    DSLBool cond = args[0].as<DSLBool>;
     DSLMethod trueBlock = args[1].as<DSLMethod>;
     DSLMethod falseBlock = args[2].as<DSLMethod>;
-    DSLObject value = cond.invoke(scope, o, new Array<DSLObject>());
-    if(!(value isa DSLBool)) {
-      throw new Exception("Condition should return in bool: " + cond.as<String>);
-    }
-    if(value.as<DSLBool>.value) {
+    if(cond.as<DSLBool>.value) {
       return trueBlock.invoke(scope, o, new Array<DSLObject>());
     } else {
       return falseBlock.invoke(scope, o, new Array<DSLObject>());
@@ -312,15 +299,13 @@ class diesler::builtin::object::IfThenElseMethod extends DSLMethod {
 }
 
 class diesler::builtin::object::WhileMethod extends DSLMethod {
-  new(Scope scope) extends super(scope, "while:do:", new List<ASTPattern>(new ASTIdnPattern(scope, "condition"), new ASTIdnPattern(scope, "block")), new List<Bool>(false, false), null) {
+  new(Scope scope) extends super(scope, "while:do:", new List<ASTPattern>(new ASTIdnPattern(scope, "condition"), new ASTIdnPattern(scope, "block")), new List<Bool>(true, false), null) {
   }
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
-    verifyType(args[0], typeof DSLMethod);
-    verifyType(args[1], typeof DSLMethod);
-    DSLMethod cond = args[0].as<DSLMethod>;
+    ASTNode cond = args[0].as<ASTNode>;
     DSLMethod block = args[1].as<DSLMethod>;
-    DSLObject value = cond.invoke(scope, o, new Array<DSLObject>());
+    DSLObject value = cond.eval(scope);
     if(!(value isa DSLBool)) {
       throw new Exception("Condition should return in bool: " + cond.as<String>);
     }
@@ -329,7 +314,7 @@ class diesler::builtin::object::WhileMethod extends DSLMethod {
       if(scope.hasReturned) {
         return scope.returnValue;
       }
-      value = cond.invoke(scope, o, new Array<DSLObject>());
+      value = cond.eval(scope);
     }
     return o;
   }

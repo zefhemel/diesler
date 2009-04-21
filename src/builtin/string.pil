@@ -33,6 +33,9 @@ class diesler::DSLString extends DSLObject {
 DSLClass diesler::builtin::string::init(Scope scope) {
   var string = new DSLClass(scope, scope["Object"].as<DSLClass>, "String");
   string.setInstanceMethod("+", new diesler::builtin::string::StringConcatMethod(scope));
+  string.setInstanceMethod("char_at:", new diesler::builtin::string::CharAtMethod(scope));
+  string.setInstanceMethod("substring_from:to:", new diesler::builtin::string::SubstringMethod(scope));
+  string.setInstanceMethod("length", new diesler::builtin::string::LengthMethod(scope));
   return string;
 }
 
@@ -42,6 +45,42 @@ class diesler::builtin::string::StringConcatMethod extends DSLMethod {
 
   DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
     return new DSLString(scope, o.as<DSLString>.value + args[0].as<DSLString>.value);
+  }
+}
+
+class diesler::builtin::string::CharAtMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "char_at:", new List<ASTPattern>(new ASTIdnPattern(scope, "index")), new List<Bool>(false), null) {
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    var s = new MutableString();
+    s.append(o.as<DSLString>.value[args[0].as<DSLInt>.value]);
+    return new DSLString(scope, s.as<String>);
+  }
+}
+
+class diesler::builtin::string::SubstringMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "substring_from:to:", new List<ASTPattern>(new ASTIdnPattern(scope, "from"), new ASTIdnPattern(scope, "to")), new List<Bool>(false, false), null) {
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    var s = o.as<DSLString>;
+    Int from = args[0].as<DSLInt>.value;
+    Int to = args[1].as<DSLInt>.value;
+    var newS = new MutableString();
+    for(Int i = from; i < to; i++) {
+      newS.append(s.value[i]);
+    }
+    return new DSLString(scope, newS.as<String>);
+  }
+}
+
+class diesler::builtin::string::LengthMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "length", new List<ASTPattern>(), new List<Bool>(), null) {
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    return new DSLInt(scope, o.as<DSLString>.value.length);
   }
 }
 

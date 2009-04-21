@@ -2,7 +2,7 @@
 define: methods{
   return_something {
     print: "Hello"
-    if: [ true ] then: {
+    if: true then: {
       return 10
     }
     print: "there"
@@ -11,7 +11,7 @@ define: methods{
   }
 
   whatever {
-    while: [true] do: {
+    while: true do: {
       return false
     }
   }
