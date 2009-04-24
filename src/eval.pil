@@ -76,7 +76,7 @@ class diesler::ASTBlock extends diesler::ASTNode {
       }
     }
     // Never happens
-    throw new Exception("Interpreter bug");
+    return new DSLNull(scope);
   }
 }
 

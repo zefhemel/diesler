@@ -66,6 +66,17 @@ List define_instance: methods{
     l each: |e| { add: e }
     return self
   }
+
+  join: seperator {
+    local s = MutableString new
+    (0..self length) each: |i| {
+      s append: (self get: i)
+      if: i < self length-1 then: {
+        s append: ", " 
+      }
+    }
+    return s as_string
+  }
 }
 
 local TypedList = List subclass: "TypedList" with: methods {

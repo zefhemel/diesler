@@ -185,7 +185,11 @@ class diesler::DSLMethod extends DSLObject {
   DSLObject invoke(Scope scope, DSLObject self, Array<DSLObject> args) {
     Scope localScope = null;
     if(closure != null) {
-      localScope = new Scope(closure, self); //closure.createLightSubScope(self);
+      if(scope.self != self) { // explicitly set self
+        localScope = new Scope(closure, self);
+      } else {
+        localScope = new Scope(closure, closure.self);
+      }
     } else {
       localScope = new Scope(scope, self);
     }

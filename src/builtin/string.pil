@@ -30,6 +30,33 @@ class diesler::DSLString extends DSLObject {
   }
 }
 
+class diesler::DSLMutableString extends DSLObject {
+  MutableString value = null;
+
+  new(Scope scope, MutableString value) extends super(scope["MutableString"].as<DSLClass>) {
+    this.value = value;
+  }
+
+  as<String> {
+    return value.as<String>;
+  }
+
+  Bool ==(Object other) {
+    if(other == null) {
+      return false;
+    }
+    if(other isa DSLMutableString) {
+      return value == other.as<DSLMutableString>.value;
+    } else {
+      return false;
+    }
+  }
+
+  Int hashCode() {
+    return value.hashCode();
+  }
+}
+
 DSLClass diesler::builtin::string::init(Scope scope) {
   var string = new DSLClass(scope, scope["Object"].as<DSLClass>, "String");
   string.setInstanceMethod("+", new diesler::builtin::string::StringConcatMethod(scope));
@@ -37,6 +64,15 @@ DSLClass diesler::builtin::string::init(Scope scope) {
   string.setInstanceMethod("substring_from:to:", new diesler::builtin::string::SubstringMethod(scope));
   string.setInstanceMethod("length", new diesler::builtin::string::LengthMethod(scope));
   return string;
+}
+
+DSLClass diesler::builtin::mutablestring::init(Scope scope) {
+  var mutablestring = new DSLClass(scope, scope["Object"].as<DSLClass>, "MutableString");
+  mutablestring.setInstanceMethod("append:", new diesler::builtin::mutablestring::AppendMethod(scope));
+  mutablestring.setInstanceMethod("length", new diesler::builtin::mutablestring::LengthMethod(scope));
+
+  setNewMethod(scope, mutablestring, DSLObject(DSLClass instanceOf) { new DSLMutableString(scope, new MutableString()) });
+  return mutablestring;
 }
 
 class diesler::builtin::string::StringConcatMethod extends DSLMethod {
@@ -84,3 +120,22 @@ class diesler::builtin::string::LengthMethod extends DSLMethod {
   }
 }
 
+class diesler::builtin::mutablestring::AppendMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "append:", new List<ASTPattern>(new ASTIdnPattern(scope, "str")), new List<Bool>(false), null) {
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    MutableString s = o.as<DSLMutableString>.value;
+    s.append(args[0].as<String>);
+    return o;
+  }
+}
+
+class diesler::builtin::mutablestring::LengthMethod extends DSLMethod {
+  new(Scope scope) extends super(scope, "length", new List<ASTPattern>(), new List<Bool>(), null) {
+  }
+
+  DSLObject invoke(Scope scope, DSLObject o, Array<DSLObject> args) {
+    return new DSLInt(scope, o.as<DSLMutableString>.value.length);
+  }
+}

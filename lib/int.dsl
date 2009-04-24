@@ -3,7 +3,7 @@ Int define_instance: methods{
   .. up {
     local l = ()
     local counter = self
-    while: counter <= up do: {
+    while: counter < up do: {
       l add: counter
       counter = counter + 1
     }

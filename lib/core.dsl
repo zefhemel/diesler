@@ -7,7 +7,7 @@ Object define: methods {
   }
 
   subclass {
-    return sub_class: "Unnamed"
+    return subclass: "Unnamed"
   }
 }
 
