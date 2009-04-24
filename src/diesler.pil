@@ -18,7 +18,10 @@ void main(Array<String> args) {
     var obj = new DSLObject(rootScope["Object"].as<DSLClass>);
     obj.getMethod("import:").invoke(rootScope, obj, new Array<DSLObject>(new DSLString(rootScope, "stdlib.dsl")));
     var parsed = new Parser(rootScope, content).acceptStatements();
+    startBenchmark();
     parsed.eval(new Scope(rootScope, obj));
+    var eb = endBenchmark();
+    println("That took: " + eb.as<String> + " milliseconds.");
   } else {
     println("Welcome to diesler, type :q to quit.");
     var obj = new DSLObject(rootScope["Object"].as<DSLClass>);
@@ -55,3 +58,6 @@ void main(Array<String> args) {
     }
   }
 }
+
+external void diesler::startBenchmark();
+external Int diesler::endBenchmark();
