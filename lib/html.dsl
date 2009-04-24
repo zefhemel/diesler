@@ -1,9 +1,9 @@
-local HTMLEnv = Object subclass: "HTMLEnv" with: methods{
+local Page = Object subclass: "Page" with: methods{
   init {
     @stream = MutableString new
   }
 
-  missingMethod: sel withArgs: args {
+  missing_method: sel with_args: args {
     local selector_parts = sel split: ":"
     local tag = selector_parts get: 0
     local attributes = ()
@@ -46,12 +46,26 @@ local HTMLEnv = Object subclass: "HTMLEnv" with: methods{
   }
 }
 
-local Web = Object subclass: "Web"
+local WebSimple = Page subclass
 
-Web define: methods {
-  generate_html: blk {
-    local he = HTMLEnv new
-    blk invoke: () on: he
-    return he as_string
+WebSimple define_instance: methods{
+  title { "" }
+  render {
+    html: {
+      head: {
+        title: { text: self title }
+      }
+      body: {
+        self body
+      }
+    }
+  }
+}
+
+WebSimple define: methods{
+  create_page: meths {
+    local sc = self subclass
+    sc define_instance: meths
+    return sc
   }
 }

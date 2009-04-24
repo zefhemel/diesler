@@ -111,8 +111,8 @@ class diesler::ASTSetPropertyPattern extends diesler::ASTPattern {
     DSLObject result = exp.eval(scope);
     if(result.getMethod(property + "=") != null) {
       result.getMethod(property + "=").invoke(scope, result, new Array<DSLObject>(other));
-    } else if(result.getMethod("missingMethod:withArgs:") != null) {
-      result.getMethod("missingMethod:withArgs:").invoke(scope, result, new Array<DSLObject>(new DSLString(scope, property+"="), new DSLList(scope, new List<DSLObject>(other))));
+    } else if(result.getMethod("missing_method:with_args:") != null) {
+      result.getMethod("missing_method:with_args:").invoke(scope, result, new Array<DSLObject>(new DSLString(scope, property+"="), new DSLList(scope, new List<DSLObject>(other))));
     } else {
       return false;
     }

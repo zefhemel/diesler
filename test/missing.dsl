@@ -1,6 +1,6 @@
 
-local User = Object subClass: "User" with: methods{
-  missingMethod: nm withArgs: args {
+local User = Object subclass: "User" with: methods{
+  missing_method: nm with_args: args {
     print: "Called " + nm
     print: "Args:"
     print: args

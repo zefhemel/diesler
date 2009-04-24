@@ -29,9 +29,9 @@ class diesler::ASTMessageSend extends diesler::ASTNode {
     var args = new Array<DSLObject>(arguments.length);
     DSLMethod method = methodObj.getMethod(selector);
     if(method == null) {
-      if(methodObj.getMethod("missingMethod:withArgs:") != null) {
+      if(methodObj.getMethod("missing_method:with_args:") != null) {
         args = new Array<DSLObject>(2);
-        method = methodObj.getMethod("missingMethod:withArgs:");
+        method = methodObj.getMethod("missing_method:with_args:");
         args[0] = new DSLString(scope, selector);
         var argList = new List<DSLObject>();
         for(Int i = 0; i < arguments.length; i++) {
